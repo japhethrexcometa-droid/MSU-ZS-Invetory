@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
 
-  const isAdmin = profile?.role === "system_administrator";
+  const isAdmin = profile?.role === "logistics_officer";
 
   useEffect(() => {
     if (authLoading) return;

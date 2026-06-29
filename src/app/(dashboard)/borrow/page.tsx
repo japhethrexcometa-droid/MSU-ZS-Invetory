@@ -54,28 +54,16 @@ export default function BorrowPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
-  const isOfficer =
-    profile?.role === "system_administrator" ||
-    profile?.role === "supply_officer" ||
-    profile?.role === "rotc_commandant" ||
-    profile?.role === "logistics_officer" ||
-    profile?.role === "rotc_officer";
-
-  const canApprove =
-    profile?.role === "system_administrator" ||
-    profile?.role === "rotc_commandant" ||
-    profile?.role === "supply_officer";
-
-  const canRelease =
-    profile?.role === "system_administrator" || profile?.role === "supply_officer";
+  const isLogistics = profile?.role === "logistics_officer";
+  const canApprove = profile?.role === "logistics_officer";
+  const canRelease = profile?.role === "logistics_officer";
 
   const loadTransactions = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchBorrowTransactions({
         search: search,
-        status: statusFilter && statusFilter !== "__all__" ? statusFilter : undefined,
-        borrowerId: !isOfficer ? profile?.id : undefined,
+        status: statusFilter && statusFilter !== "__all__" ? statusFilter : undefined,          borrowerId: isLogistics ? undefined : profile?.id,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -87,7 +75,7 @@ export default function BorrowPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page, isOfficer, profile?.id]);
+  }, [search, statusFilter, page, isLogistics, profile?.id]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -134,7 +122,7 @@ export default function BorrowPage() {
             {pendingCount > 0 && ` · ${pendingCount} pending`}
           </p>
         </div>
-        {!isOfficer && (
+        {profile?.role === "rotc_officer" && (
           <Button onClick={() => router.push("/dashboard/borrow/new")} className="h-10 gap-2">
             <Plus className="w-4 h-4" />
             New Borrow Request
@@ -258,10 +246,10 @@ export default function BorrowPage() {
                         <p className="text-xs text-muted-foreground mt-1">
                           {search || statusFilter
                             ? "Try adjusting your search or filters"
-                            : isOfficer ? "No borrow requests yet" : "Submit your first borrow request"}
+                            : isLogistics ? "No borrow requests yet" : "Submit your first borrow request"}
                         </p>
                       </div>
-                      {!isOfficer && !search && !statusFilter && (
+                      {profile?.role === "rotc_officer" && !search && !statusFilter && (
                         <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/borrow/new")}>
                           <Plus className="w-3 h-3 mr-1.5" />
                           New Request

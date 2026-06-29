@@ -50,7 +50,7 @@ export default function ReportsPage() {
   const [generating, setGenerating] = useState(false);
   const [preview, setPreview] = useState<any[] | null>(null);
 
-  const isAdmin = profile?.role === "system_administrator" || profile?.role === "rotc_commandant" || profile?.role === "supply_officer";
+  const isAdmin = profile?.role === "logistics_officer";
 
   const fetchReportData = async (): Promise<any[]> => {
     switch (selectedReport) {

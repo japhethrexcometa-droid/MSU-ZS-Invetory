@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
   const [statusData, setStatusData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = profile?.role === "system_administrator" || profile?.role === "rotc_commandant";
+  const isAdmin = profile?.role === "logistics_officer";
 
   useEffect(() => {
     if (authLoading) return;

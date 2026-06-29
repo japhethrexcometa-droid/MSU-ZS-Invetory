@@ -6,13 +6,8 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type UserRole =
-  | "system_administrator"
-  | "rotc_commandant"
-  | "supply_officer"
   | "logistics_officer"
-  | "property_custodian"
-  | "rotc_officer"
-  | "student_cadet";
+  | "rotc_officer";
 
 export type AssetCondition = "excellent" | "good" | "fair" | "poor" | "damaged";
 export type AssetStatus = "available" | "borrowed" | "maintenance" | "lost" | "disposed";

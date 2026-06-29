@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Eye, EyeOff, LogIn } from "lucide-react";
+import { Shield, Eye, EyeOff, LogIn, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,21 +21,61 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    if (!studentId || !password) {
+      toast.error("Please enter your Student ID and password");
       return;
     }
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      // Format Student ID as email for Supabase Auth
+      const authEmail = `${studentId.trim()}@rotc.msuzs.local`;
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail,
+        password,
+      });
+
       if (error) throw error;
-      toast.success("Welcome back!");
-      router.push("/dashboard");
-      router.refresh();
+
+      if (data.user) {
+        // Check if user is approved (use any to bypass strict type inference)
+        const { data: profile } = await (supabase as any)
+          .from("profiles")
+          .select("is_approved, role, first_name, last_name")
+          .eq("id", data.user.id)
+          .single();
+
+        if (!profile) {
+          // Profile doesn't exist yet — sign out and ask user to wait
+          await supabase.auth.signOut();
+          toast.error("Account not found. Please contact the Logistics Officer (S-4).");
+          return;
+        }
+
+        if (!profile.is_approved) {
+          // User not approved — sign out immediately
+          await supabase.auth.signOut();
+          toast.error(
+            `Account pending approval. Please wait for the Logistics Officer (S-4) to approve your account.`,
+            { duration: 6000 }
+          );
+          return;
+        }
+
+        // User is approved — allow login
+        toast.success(`Welcome, ${profile.first_name}!`);
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Login failed";
-      toast.error(message);
+      
+      if (message.includes("Invalid login credentials")) {
+        toast.error("Invalid Student ID or password. Check your credentials or contact the Logistics Officer (S-4).");
+      } else {
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,29 +105,21 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">University Email</Label>
+              <Label htmlFor="studentId">Student ID Number</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="your.name@msuzs-rotc.edu.ph"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="studentId"
+                type="text"
+                placeholder="2024-00001"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
                 required
-                className="h-11"
-                autoComplete="email"
+                className="h-11 font-mono"
+                autoComplete="username"
               />
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-primary hover:underline underline-offset-4"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -107,6 +139,14 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+            </div>
+
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">
+                Having trouble logging in? Contact the <strong>Logistics Officer (S-4)</strong> 
+                for password reset or account approval.
+              </p>
             </div>
 
             <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
@@ -136,7 +176,7 @@ export default function LoginPage() {
           </div>
           <Link href="/register" className="w-full">
             <Button variant="outline" className="w-full h-11">
-              Create an Account
+              Create ROTC Officer Account
             </Button>
           </Link>
           <p className="text-xs text-muted-foreground text-center mt-2">

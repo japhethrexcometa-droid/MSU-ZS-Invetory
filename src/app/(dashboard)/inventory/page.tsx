@@ -76,9 +76,7 @@ export default function InventoryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const isAdmin =
-    profile?.role === "system_administrator" ||
-    profile?.role === "supply_officer" ||
-    profile?.role === "property_custodian";
+    profile?.role === "logistics_officer";
 
   const loadAssets = useCallback(async () => {
     setLoading(true);

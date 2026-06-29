@@ -35,21 +35,28 @@ interface NavItem {
   roles?: UserRole[];
 }
 
+interface NavItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  adminOnly?: boolean; // Only visible to Logistics Officer
+}
+
 const navItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Inventory", href: "/dashboard/inventory", icon: Package, roles: ["system_administrator", "supply_officer", "property_custodian"] },
-  { title: "Categories", href: "/dashboard/categories", icon: BookOpen, roles: ["system_administrator", "supply_officer"] },
-  { title: "Locations", href: "/dashboard/locations", icon: Search, roles: ["system_administrator", "supply_officer"] },
+  { title: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { title: "Categories", href: "/dashboard/categories", icon: BookOpen },
+  { title: "Locations", href: "/dashboard/locations", icon: Search },
   { title: "Borrow / Return", href: "/dashboard/borrow", icon: ArrowLeftRight },
   { title: "Returns", href: "/dashboard/returns", icon: RotateCcw },
-  { title: "Radio Tracking", href: "/dashboard/radios", icon: Radio, roles: ["system_administrator", "supply_officer", "logistics_officer"] },
+  { title: "Radio Tracking", href: "/dashboard/radios", icon: Radio },
   { title: "Lost & Damaged", href: "/dashboard/lost-damaged", icon: AlertTriangle },
-  { title: "Maintenance", href: "/dashboard/maintenance", icon: Wrench, roles: ["system_administrator", "supply_officer"] },
-  { title: "Reports", href: "/dashboard/reports", icon: FileText, roles: ["system_administrator", "rotc_commandant", "supply_officer"] },
-  { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["system_administrator", "rotc_commandant"] },
-  { title: "Audit Trail", href: "/dashboard/audit-log", icon: Activity, roles: ["system_administrator"] },
-  { title: "Users", href: "/dashboard/users", icon: Users, roles: ["system_administrator"] },
-  { title: "System Settings", href: "/dashboard/settings", icon: Settings, roles: ["system_administrator"] },
+  { title: "Maintenance", href: "/dashboard/maintenance", icon: Wrench },
+  { title: "Reports", href: "/dashboard/reports", icon: FileText },
+  { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Audit Trail", href: "/dashboard/audit-log", icon: Activity, adminOnly: true },
+  { title: "Users", href: "/dashboard/users", icon: Users, adminOnly: true },
+  { title: "System Settings", href: "/dashboard/settings", icon: Settings, adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -59,9 +66,10 @@ interface SidebarProps {
 
 export function Sidebar({ role, isCollapsed }: SidebarProps) {
   const pathname = usePathname();
+  const isLogistics = role === "logistics_officer";
 
   const filteredItems = navItems.filter(
-    (item) => !item.roles || (role && item.roles.includes(role))
+    (item) => !item.adminOnly || isLogistics
   );
 
   return (

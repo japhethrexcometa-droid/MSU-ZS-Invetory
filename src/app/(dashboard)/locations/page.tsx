@@ -56,7 +56,7 @@ export default function LocationsPage() {
     description: "",
   });
 
-  const isAdmin = profile?.role === "system_administrator" || profile?.role === "supply_officer";
+  const isAdmin = profile?.role === "logistics_officer";
 
   const loadLocations = useCallback(async () => {
     setLoading(true);

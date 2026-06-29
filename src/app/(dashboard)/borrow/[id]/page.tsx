@@ -89,22 +89,12 @@ function BorrowDetail({ borrowId }: { borrowId: string }) {
   const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  const isOfficer =
-    profile?.role === "system_administrator" ||
-    profile?.role === "supply_officer" ||
-    profile?.role === "rotc_commandant" ||
-    profile?.role === "logistics_officer" ||
-    profile?.role === "rotc_officer";
-
-  const canApprove =
-    profile?.role === "system_administrator" ||
-    profile?.role === "rotc_commandant" ||
-    profile?.role === "supply_officer";
-
-  const canRelease =
-    profile?.role === "system_administrator" || profile?.role === "supply_officer";
+  const isLogistics = profile?.role === "logistics_officer";
+  const canApprove = profile?.role === "logistics_officer";
+  const canRelease = profile?.role === "logistics_officer";
 
   const isMyTransaction = transaction?.borrower_id === profile?.id;
+  const isBorrower = profile?.role === "rotc_officer" && isMyTransaction;
 
   useEffect(() => {
     const load = async () => {
@@ -241,7 +231,7 @@ function BorrowDetail({ borrowId }: { borrowId: string }) {
           {canRelease && transaction.status === "approved" && (
             <ReleaseAction transactionId={borrowId} onSuccess={handleRefresh} />
           )}
-          {(canRelease || isMyTransaction) && transaction.status === "released" && (
+          {(canRelease || isBorrower) && transaction.status === "released" && (
             <Button
               variant="default"
               size="sm"

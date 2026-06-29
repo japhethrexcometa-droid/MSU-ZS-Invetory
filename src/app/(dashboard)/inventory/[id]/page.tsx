@@ -68,7 +68,7 @@ function AssetDetail({ assetId }: { assetId: string }) {
   const [activeTab, setActiveTab] = useState("details");
 
   const isAdmin =
-    profile?.role === "system_administrator" || profile?.role === "supply_officer";
+    profile?.role === "logistics_officer";
 
   useEffect(() => {
     const load = async () => {

@@ -13,13 +13,12 @@ import { toast } from "sonner";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
+    student_number: "",
     first_name: "",
     last_name: "",
-    student_number: "",
     contact_number: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +31,11 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.student_number.trim()) {
+      toast.error("Student ID number is required");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -43,14 +47,17 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      // Use Student ID as auth email in format: student_id@rotc.msuzs.local
+      const authEmail = `${formData.student_number.trim()}@rotc.msuzs.local`;
+
       const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
+        email: authEmail,
         password: formData.password,
         options: {
           data: {
             first_name: formData.first_name,
             last_name: formData.last_name,
-            student_number: formData.student_number || undefined,
+            student_number: formData.student_number.trim(),
             contact_number: formData.contact_number || undefined,
           },
         },
@@ -59,8 +66,8 @@ export default function RegisterPage() {
       if (error) throw error;
 
       if (data.user) {
-        toast.success("Account created! Please check your email to verify.", {
-          duration: 5000,
+        toast.success("Account created! Wait for the Logistics Officer (S-4) to approve your account.", {
+          duration: 6000,
         });
         router.push("/login");
       }
@@ -85,7 +92,7 @@ export default function RegisterPage() {
             <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Create Account
+            Create ROTC Officer Account
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Register for the MSU-ZS ROTC Inventory System
@@ -99,7 +106,7 @@ export default function RegisterPage() {
               <GraduationCap className="w-5 h-5 text-primary shrink-0" />
               <div className="text-sm">
                 <span className="font-medium">Registering as: </span>
-                <span className="text-primary font-semibold">Student Cadet</span>
+                <span className="text-primary font-semibold">ROTC Officer</span>
               </div>
             </div>
 
@@ -129,28 +136,19 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">University Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your.name@msuzs-rotc.edu.ph"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                required
-                className="h-11"
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="student_number">Student Number</Label>
+              <Label htmlFor="student_number">Student ID Number</Label>
               <Input
                 id="student_number"
-                placeholder="e.g., 2024-00001"
+                placeholder="2024-00001"
                 value={formData.student_number}
                 onChange={(e) => handleChange("student_number", e.target.value)}
+                required
                 className="h-11"
+                autoComplete="username"
               />
+              <p className="text-xs text-muted-foreground">
+                This will be your login ID. Default password is your Student ID number.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -202,14 +200,23 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Info Notice */}
+            {/* Approval Notice */}
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="text-xs text-amber-600 dark:text-amber-400">
+                <p className="font-medium mb-1">Account requires approval</p>
+                <p>
+                  After registration, the <strong>Logistics Officer (S-4)</strong> must approve your account 
+                  before you can access the system. You will be notified once approved.
+                </p>
+              </div>
+            </div>
+
             <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
               <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
-                All new accounts are registered as <strong>Student Cadet</strong>. 
-                Officer and administrator roles are assigned by the System Administrator 
-                after account approval. Your account will need to be approved before 
-                you can borrow equipment.
+                <strong>Default password:</strong> Your Student ID number. 
+                Change your password after logging in via Settings.
               </p>
             </div>
 

@@ -54,7 +54,7 @@ export default function LostDamagedDetailPage() {
   const [assignedTechnician, setAssignedTechnician] = useState("");
   const [repairNotes, setRepairNotes] = useState("");
 
-  const isAdmin = profile?.role === "system_administrator" || profile?.role === "rotc_commandant" || profile?.role === "supply_officer" || profile?.role === "property_custodian";
+  const isLogistics = profile?.role === "logistics_officer";
 
   useEffect(() => {
     if (authLoading || !params.id) return;
@@ -219,7 +219,7 @@ export default function LostDamagedDetailPage() {
           </Card>
 
           {/* Officer Actions */}
-          {isAdmin && (
+          {isLogistics && (
             <Card className="border-border/50">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">

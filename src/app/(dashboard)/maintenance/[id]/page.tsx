@@ -43,7 +43,7 @@ export default function MaintenanceDetailPage() {
   const [nextMaintenance, setNextMaintenance] = useState("");
   const [completedDate, setCompletedDate] = useState("");
 
-  const isAdmin = profile?.role === "system_administrator" || profile?.role === "supply_officer";
+  const isAdmin = profile?.role === "logistics_officer";
 
   useEffect(() => {
     if (authLoading || !params.id) return;

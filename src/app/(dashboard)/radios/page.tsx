@@ -66,10 +66,7 @@ export default function RadiosPage() {
     needsService: 0,
   });
 
-  const canManage =
-    profile?.role === "system_administrator" ||
-    profile?.role === "supply_officer" ||
-    profile?.role === "logistics_officer";
+  const canManage = profile?.role === "logistics_officer";
 
   const loadRadios = useCallback(async () => {
     setLoading(true);

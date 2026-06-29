@@ -40,7 +40,7 @@ export default function AuditLogPage() {
   const [actionFilter, setActionFilter] = useState("");
   const [showDetails, setShowDetails] = useState<string | null>(null);
 
-  const isAdmin = profile?.role === "system_administrator";
+  const isAdmin = profile?.role === "logistics_officer";
 
   const loadLogs = useCallback(async () => {
     setLoading(true);

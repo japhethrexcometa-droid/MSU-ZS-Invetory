@@ -103,7 +103,7 @@ function EditAssetForm({ assetId }: { assetId: string }) {
           supabase
             .from("profiles")
             .select("id, first_name, last_name, role")
-            .in("role", ["system_administrator", "supply_officer", "logistics_officer", "property_custodian", "rotc_officer", "rotc_commandant"] as any)
+            .in("role", ["logistics_officer", "rotc_officer"] as any)
             .eq("is_active", true),
         ]);
 

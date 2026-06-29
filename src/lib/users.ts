@@ -100,25 +100,63 @@ export async function fetchUsersStats() {
 
   const users: Array<{ role: string; is_active: boolean; is_approved: boolean }> = data || [];
 
+  const logisticsOfficers = users.filter((u) => u.role === "logistics_officer");
+  const rotcOfficers = users.filter((u) => u.role === "rotc_officer");
+
   return {
     total: users.length,
     active: users.filter((u) => u.is_active).length,
     pendingApproval: users.filter((u) => !u.is_approved).length,
-    officers: users.filter(
-      (u) =>
-        u.role !== "student_cadet" && u.role !== "system_administrator"
-    ).length,
-    cadets: users.filter((u) => u.role === "student_cadet").length,
-    admins: users.filter((u) => u.role === "system_administrator").length,
+    approved: users.filter((u) => u.is_approved).length,
+    logistics_officer: logisticsOfficers.length,
+    rotc_officer: rotcOfficers.length,
   };
 }
 
-export const USER_ROLE_CONFIG: Record<string, { label: string; description: string }> = {
-  system_administrator: { label: "System Administrator", description: "Full system access" },
-  rotc_commandant: { label: "ROTC Commandant", description: "Oversee all operations" },
-  supply_officer: { label: "Supply Officer", description: "Manage inventory and supplies" },
-  logistics_officer: { label: "Logistics Officer", description: "Handle logistics" },
-  property_custodian: { label: "Property Custodian", description: "Manage property records" },
-  rotc_officer: { label: "ROTC Officer", description: "Approve borrow requests" },
-  student_cadet: { label: "Student Cadet", description: "Borrow equipment" },
+export async function createOfficerAccount(data: {
+  student_number: string;
+  first_name: string;
+  last_name: string;
+  contact_number?: string;
+  role: string;
+}) {
+  const supabase = createClient();
+
+  // Create via server API route (needs service_role)
+  const response = await fetch("/api/admin/create-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Failed to create account");
+  return result;
+}
+
+export async function resetUserPassword(userId: string, studentNumber: string) {
+  const supabase = createClient();
+
+  const response = await fetch("/api/admin/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, password: studentNumber }),
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Failed to reset password");
+  return result;
+}
+
+export const USER_ROLE_CONFIG: Record<string, { label: string; description: string; color: string }> = {
+  logistics_officer: {
+    label: "Logistics Officer (S-4)",
+    description: "Full system access — manage users, inventory, settings, and approvals",
+    color: "destructive",
+  },
+  rotc_officer: {
+    label: "ROTC Officer",
+    description: "Borrow equipment, report issues, view inventory",
+    color: "default",
+  },
 };

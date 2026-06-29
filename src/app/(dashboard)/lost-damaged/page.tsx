@@ -58,7 +58,7 @@ export default function LostDamagedPage() {
   const [damageSearchInput, setDamageSearchInput] = useState("");
   const [damageStatusFilter, setDamageStatusFilter] = useState("");
 
-  const isOfficer = profile?.role === "system_administrator" || profile?.role === "rotc_commandant" || profile?.role === "supply_officer";
+  const isLogistics = profile?.role === "logistics_officer";
 
   const loadLostReports = useCallback(async () => {
     setLostLoading(true);

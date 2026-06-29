@@ -67,10 +67,7 @@ function RadioDetail({ radioId }: { radioId: string }) {
   const [activeTab, setActiveTab] = useState("details");
   const [refreshing, setRefreshing] = useState(false);
 
-  const canManage =
-    profile?.role === "system_administrator" ||
-    profile?.role === "supply_officer" ||
-    profile?.role === "logistics_officer";
+  const canManage = profile?.role === "logistics_officer";
 
   // Find active tracking record (no return date)
   const activeTracking = trackingHistory.find((t: any) => !t.return_date);

@@ -84,7 +84,7 @@ export default function NewAssetPage() {
         supabase
           .from("profiles")
           .select("id, first_name, last_name, role")
-          .in("role", ["system_administrator", "supply_officer", "logistics_officer", "property_custodian", "rotc_officer", "rotc_commandant"] as any)
+          .in("role", ["logistics_officer", "rotc_officer"] as any)
           .eq("is_active", true),
       ]);
       if (catRes.data) setCategories(catRes.data);
@@ -158,7 +158,7 @@ export default function NewAssetPage() {
   };
 
   const isAdmin =
-    profile?.role === "system_administrator" || profile?.role === "supply_officer";
+    profile?.role === "logistics_officer";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
