@@ -8,11 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react";
+import { Shield, Eye, EyeOff, UserPlus, ArrowLeft, GraduationCap, Info } from "lucide-react";
 import { toast } from "sonner";
-import { ROLES } from "@/lib/permissions";
-import type { UserRole } from "@/lib/permissions";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -21,17 +18,13 @@ export default function RegisterPage() {
     confirmPassword: "",
     first_name: "",
     last_name: "",
-    role: "student_cadet" as UserRole,
     student_number: "",
-    officer_id: "",
     contact_number: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
-
-  const isOfficer = !["student_cadet"].includes(formData.role);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value ?? "" }));
@@ -57,9 +50,7 @@ export default function RegisterPage() {
           data: {
             first_name: formData.first_name,
             last_name: formData.last_name,
-            role: formData.role,
             student_number: formData.student_number || undefined,
-            officer_id: formData.officer_id || undefined,
             contact_number: formData.contact_number || undefined,
           },
         },
@@ -103,6 +94,15 @@ export default function RegisterPage() {
 
         <form onSubmit={handleRegister}>
           <CardContent className="space-y-4">
+            {/* Role Badge - Read Only */}
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <GraduationCap className="w-5 h-5 text-primary shrink-0" />
+              <div className="text-sm">
+                <span className="font-medium">Registering as: </span>
+                <span className="text-primary font-semibold">Student Cadet</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="first_name">First Name</Label>
@@ -143,47 +143,15 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => { if (typeof value === "string") handleChange("role", value); }}
-              >
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(ROLES).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="student_number">Student Number</Label>
+              <Input
+                id="student_number"
+                placeholder="e.g., 2024-00001"
+                value={formData.student_number}
+                onChange={(e) => handleChange("student_number", e.target.value)}
+                className="h-11"
+              />
             </div>
-
-            {isOfficer ? (
-              <div className="space-y-2">
-                <Label htmlFor="officer_id">Officer ID</Label>
-                <Input
-                  id="officer_id"
-                  placeholder="e.g., OFF-2024-001"
-                  value={formData.officer_id}
-                  onChange={(e) => handleChange("officer_id", e.target.value)}
-                  className="h-11"
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="student_number">Student Number</Label>
-                <Input
-                  id="student_number"
-                  placeholder="e.g., 2024-00001"
-                  value={formData.student_number}
-                  onChange={(e) => handleChange("student_number", e.target.value)}
-                  className="h-11"
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="contact_number">Contact Number (Optional)</Label>
@@ -232,6 +200,17 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                 />
               </div>
+            </div>
+
+            {/* Info Notice */}
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">
+                All new accounts are registered as <strong>Student Cadet</strong>. 
+                Officer and administrator roles are assigned by the System Administrator 
+                after account approval. Your account will need to be approved before 
+                you can borrow equipment.
+              </p>
             </div>
 
             <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
