@@ -1,74 +1,139 @@
-# First Admin Setup Guide
+# First Admin (Logistics Officer S-4) Setup Guide
 
-After registering a normal account, follow these steps to promote yourself to **System Administrator**.
+After registering as a **ROTC Officer**, follow these steps to promote yourself to **Logistics Officer (S-4)** — the highest authority in the system.
+
+The system now uses **2 roles only**:
+- **Logistics Officer (S-4)** — Full access to everything (manage inventory, users, approvals, settings)
+- **ROTC Officer** — Can borrow items, view inventory, report lost/damaged items
 
 ---
 
-## Step 1: Register a Normal Account
+## Step 1: Register an Account
 
 1. Go to your live app: **[https://msu-zs-inventory.vercel.app/register](https://msu-zs-inventory.vercel.app/register)**
-2. Fill in your **First Name, Last Name, Email, Student Number, and Password**
+2. Fill in:
+   | Field | Example |
+   |-------|---------|
+   | First Name | `Juan` |
+   | Last Name | `Dela Cruz` |
+   | **Student ID Number** | `2024-00001` |
+   | Contact Number | `0917-123-4567` (optional) |
+   | Password | `yourpassword` (min 8 chars) |
 3. Click **"Create Account"**
-4. Check your email and verify your account (if email confirmation is enabled)
 
-> **Note:** You will register as **Student Cadet** by default. We'll promote you to admin in the next step.
+> **Note:** You will register as **ROTC Officer** with `is_approved = false`. We'll promote you in the next step.
+> **Login ID:** Your Student ID number (e.g., `2024-00001`)
+> **Default password (if forgotten):** Your Student ID number
 
 ---
 
-## Step 2: Promote Yourself to System Administrator
+## Step 2: Promote Yourself to Logistics Officer (S-4)
 
-### Option A: Supabase SQL Editor (Recommended)
+### Using Supabase SQL Editor
 
-1. Go to your **Supabase Dashboard**: [https://supabase.com/dashboard/project/pcvqgpfpighxzdcjggnn](https://supabase.com/dashboard/project/pcvqgpfpighxzdcjggnn)
+1. Go to your **Supabase Dashboard**: <a href="https://supabase.com/dashboard/project/pcvqgpfpighxzdcjggnn" target="_blank">https://supabase.com/dashboard/project/pcvqgpfpighxzdcjggnn</a>
 2. Click **"SQL Editor"** in the left sidebar
 3. Click **"New Query"**
-4. **Paste this SQL** (replace `your.email@msuzs-rotc.edu.ph` with your actual email):
+4. **Paste this SQL** (replace `2024-00001` with your actual Student ID):
 
 ```sql
--- Promote user to System Administrator
+-- Verify your account exists
+select id, email, role, is_approved, student_number, first_name, last_name
+from public.profiles
+where student_number = '2024-00001';
+
+-- Promote to Logistics Officer (S-4) and approve
 update public.profiles
 set
-  role = 'system_administrator',
+  role = 'logistics_officer',
   is_approved = true,
+  approved_at = now(),
   updated_at = now()
-where email = 'your.email@msuzs-rotc.edu.ph';
+where student_number = '2024-00001';
 
--- Check if it worked
+-- Confirm the promotion
 select id, email, role, is_approved, is_active
 from public.profiles
-where email = 'your.email@msuzs-rotc.edu.ph';
+where student_number = '2024-00001';
 ```
 
 5. Click **"Run"**
-6. You should see your profile with `role = system_administrator` and `is_approved = true`
+6. You should see your profile with:
+   - `role = logistics_officer` ✅
+   - `is_approved = true` ✅
 
-### Option B: Find your User ID first
-
-If you don't know your email, you can find all users:
+### Alternative: Find by User ID
 
 ```sql
 -- List all registered users
-select id, email, role, is_approved, is_active, created_at
+select id, student_number, role, is_approved, first_name, last_name
 from public.profiles
 order by created_at desc;
-```
 
-Then promote by ID:
-
-```sql
+-- Promote by ID
 update public.profiles
 set
-  role = 'system_administrator',
+  role = 'logistics_officer',
   is_approved = true,
+  approved_at = now(),
   updated_at = now()
 where id = 'your-uuid-here';
 ```
 
 ---
 
-## Step 3: Configure Auth Settings
+## Step 3: Log In as Logistics Officer (S-4)
 
-In your Supabase Dashboard, update the redirect URLs for production:
+1. Go to your live app: **[https://msu-zs-inventory.vercel.app/login](https://msu-zs-inventory.vercel.app/login)**
+2. Enter your **Student ID** and **password**
+3. You now have **full access** to everything!
+
+### What you can do:
+
+| Feature | Access |
+|---------|--------|
+| ✅ **Users** | Approve new accounts, create accounts, change roles, reset passwords |
+| ✅ **Audit Trail** | View all system activity |
+| ✅ **System Settings** | Configure penalties, borrow limits, etc. |
+| ✅ **Inventory** | Add, edit, delete assets |
+| ✅ **Categories & Locations** | Full CRUD management |
+| ✅ **Borrow/Return** | Approve, reject, release items |
+| ✅ **Radio Tracking** | Assign radios, track maintenance |
+| ✅ **Lost & Damaged** | Review and update status |
+| ✅ **Reports & Analytics** | Full access to all data insights |
+
+---
+
+## Managing ROTC Officers
+
+As Logistics Officer (S-4), you can manage users from the **Users** page in the app:
+
+| Action | How |
+|--------|-----|
+| **Approve new accounts** | Click ✅ on pending ROTC Officers |
+| **Create new account** | Click "Create Officer Account" button |
+| **Reset password to Student ID** | Click 🔑 icon on any user |
+| **Change role** | Click ⚙ icon (cannot change another Logistics Officer) |
+| **Activate/Deactivate** | Toggle user access with ❌ button |
+
+> **Creating new accounts:** When you create an account as **Logistics Officer** via the dialog, it's **auto-approved**. ROTC Officer accounts start as **pending**.
+
+---
+
+## Default Credentials for New Accounts
+
+```
+Login ID: 2024-XXXXX (Student ID number)
+Default Password: 2024-XXXXX (same as Student ID)
+```
+
+Officers can change their password after logging in via **Settings** > **Change Password**.
+
+---
+
+## Configure Auth Settings
+
+In your Supabase Dashboard:
 
 1. Go to **Authentication** → **URL Configuration**
 2. Set **Site URL** to: `https://msu-zs-inventory.vercel.app`
@@ -78,29 +143,6 @@ In your Supabase Dashboard, update the redirect URLs for production:
    https://msu-zs-inventory.vercel.app/*
    ```
 4. Click **"Save"**
-
----
-
-## Step 4: Log In as Admin
-
-1. Go to your live app: **[https://msu-zs-inventory.vercel.app/login](https://msu-zs-inventory.vercel.app/login)**
-2. Sign in with your email and password
-3. You should now see **full admin access** including:
-   - ✅ **Users** — Approve new accounts, change roles, activate/deactivate
-   - ✅ **Audit Trail** — View all system activity
-   - ✅ **System Settings** — Configure penalties, borrow limits, etc.
-   - ✅ **Reports & Analytics** — Full access to all data insights
-
----
-
-## Managing Other Users
-
-As System Administrator, you can:
-
-1. **Approve new users** — Go to **Users** page, click the green checkmark on unapproved accounts
-2. **Change roles** — Click the gear icon on any user to promote them (e.g., to Supply Officer, ROTC Commandant, etc.)
-3. **Activate/Deactivate** — Toggle user access with the red/green buttons
-4. **View audit logs** — See every action across the system in **Audit Trail**
 
 ---
 

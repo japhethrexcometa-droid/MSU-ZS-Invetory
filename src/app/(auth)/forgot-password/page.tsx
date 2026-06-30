@@ -1,72 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ArrowLeft, Send, MailCheck } from "lucide-react";
-import { toast } from "sonner";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield, ArrowLeft, KeyRound, Info } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const supabase = createClient();
-
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      toast.error("Please enter your email address");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-      });
-      if (error) throw error;
-      setSent(true);
-      toast.success("Password reset email sent!");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to send reset email";
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (sent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/50 to-background p-4">
-        <Card className="w-full max-w-md relative backdrop-blur-sm bg-card/80 border-border/50 shadow-2xl">
-          <CardHeader className="text-center space-y-2 pb-6">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-success/20 flex items-center justify-center">
-              <MailCheck className="w-8 h-8 text-success" />
-            </div>
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              Check Your Email
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              We&apos;ve sent a password reset link to <strong>{email}</strong>
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex flex-col gap-3 pt-2 pb-6">
-            <Link href="/login" className="w-full">
-              <Button variant="outline" className="w-full h-11">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Login
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/50 to-background p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -82,50 +21,41 @@ export default function ForgotPasswordPage() {
           <CardTitle className="text-2xl font-bold tracking-tight">
             Reset Password
           </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
-            Enter your email and we&apos;ll send you a reset link
-          </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleReset}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">University Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your.name@msuzs-rotc.edu.ph"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-11"
-              />
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center gap-4 p-6 rounded-lg bg-muted/50 border border-border/50 text-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <KeyRound className="w-6 h-6 text-primary" />
             </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Contact the Logistics Officer (S-4)</p>
+              <p className="text-sm text-muted-foreground">
+                Password resets can only be done by the <strong>Logistics Officer (S-4)</strong>. 
+                Please contact them directly to have your password reset to your Student ID number.
+              </p>
+            </div>
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-left w-full">
+              <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Your default password is your <strong>Student ID number</strong>. 
+                If you changed it and forgot it, the Logistics Officer can reset it for you.
+              </p>
+            </div>
+          </div>
 
-            <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Sending...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Send className="w-4 h-4" />
-                  Send Reset Link
-                </span>
-              )}
+          <Link href="/login" className="block">
+            <Button variant="outline" className="w-full h-11">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Login
             </Button>
-          </CardContent>
-        </form>
-
-        <CardFooter className="pt-2 pb-6">
-          <Link
-            href="/login"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Login
           </Link>
+        </CardContent>
+
+        <CardFooter className="justify-center pb-6">
+          <p className="text-xs text-muted-foreground text-center">
+            Authorized personnel only. All access is monitored and logged.
+          </p>
         </CardFooter>
       </Card>
     </div>

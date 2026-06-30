@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Eye, EyeOff, UserPlus, ArrowLeft, GraduationCap, Info } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ export default function RegisterPage() {
     student_number: "",
     first_name: "",
     last_name: "",
+    email: "",
     contact_number: "",
     password: "",
     confirmPassword: "",
@@ -36,6 +37,10 @@ export default function RegisterPage() {
       toast.error("Student ID number is required");
       return;
     }
+    if (!formData.email.trim()) {
+      toast.error("Email (Gmail) is required");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -47,7 +52,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Use Student ID as auth email in format: student_id@rotc.msuzs.local
+      // Use Student ID as auth email format so login with Student ID works
       const authEmail = `${formData.student_number.trim()}@rotc.msuzs.local`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -58,6 +63,7 @@ export default function RegisterPage() {
             first_name: formData.first_name,
             last_name: formData.last_name,
             student_number: formData.student_number.trim(),
+            email: formData.email.trim(), // Store actual Gmail in metadata
             contact_number: formData.contact_number || undefined,
           },
         },
@@ -94,9 +100,6 @@ export default function RegisterPage() {
           <CardTitle className="text-2xl font-bold tracking-tight">
             Create ROTC Officer Account
           </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
-            Register for the MSU-ZS ROTC Inventory System
-          </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleRegister}>
@@ -146,9 +149,19 @@ export default function RegisterPage() {
                 className="h-11"
                 autoComplete="username"
               />
-              <p className="text-xs text-muted-foreground">
-                This will be your login ID. Default password is your Student ID number.
-              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email (Gmail)</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="juandelacruz@gmail.com"
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                required
+                className="h-11"
+              />
             </div>
 
             <div className="space-y-2">
@@ -200,23 +213,10 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Approval Notice */}
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-600 dark:text-amber-400">
-                <p className="font-medium mb-1">Account requires approval</p>
-                <p>
-                  After registration, the <strong>Logistics Officer (S-4)</strong> must approve your account 
-                  before you can access the system. You will be notified once approved.
-                </p>
-              </div>
-            </div>
-
             <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
               <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
-                <strong>Default password:</strong> Your Student ID number. 
-                Change your password after logging in via Settings.
+                After registration, the <strong>Logistics Officer (S-4)</strong> must approve your account.
               </p>
             </div>
 
