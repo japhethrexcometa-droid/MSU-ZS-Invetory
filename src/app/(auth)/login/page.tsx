@@ -28,43 +28,48 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // Step 1: Look up the email associated with this Student ID
-      const { data: email, error: lookupError } = await (supabase as any)
-        .rpc("get_email_by_student_number", {
-          p_student_number: studentId.trim(),
-        });
+      // Step 1: Look up the email by Student ID (server-side, bypasses RLS)
+      const lookupRes = await fetch("/api/auth/lookup-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_number: studentId.trim() }),
+      });
 
-      if (lookupError || !email) {
+      const lookupData = await lookupRes.json();
+
+      if (!lookupRes.ok || !lookupData.email) {
         toast.error("Account not found. Please check your Student ID or contact the Logistics Officer (S-4).");
         return;
       }
 
       // Step 2: Sign in with the actual email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: lookupData.email,
         password,
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Check if user is approved
-        const { data: profile } = await (supabase as any)
-          .from("profiles")
-          .select("is_approved, role, first_name, last_name, student_number")
-          .eq("id", data.user.id)
-          .single();
+        // Step 3: Check profile (server-side, bypasses RLS)
+        const profileRes = await fetch("/api/auth/lookup-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: data.user.id }),
+        });
 
-        if (!profile) {
+        const profile = await profileRes.json();
+
+        if (!profileRes.ok) {
           await supabase.auth.signOut();
-          toast.error("Account not found. Please contact the Logistics Officer (S-4).");
+          toast.error("Account not found. Please check your Student ID or contact the Logistics Officer (S-4).");
           return;
         }
 
         if (!profile.is_approved) {
           await supabase.auth.signOut();
           toast.error(
-            `Account pending approval. Please wait for the Logistics Officer (S-4) to approve your account.`,
+            "Account pending approval. Please wait for the Logistics Officer (S-4) to approve your account.",
             { duration: 6000 }
           );
           return;
