@@ -10,64 +10,23 @@ export async function GET() {
     const adminSupabase = createAdminClient();
 
     // Check if admin already exists
-    const { data: existingUser } = await adminSupabase.auth.admin.listUsers();
-
-    const adminExists = existingUser?.users?.some(
+    const { data: existingUsers } = await adminSupabase.auth.admin.listUsers();
+    const existingAdmin = existingUsers?.users?.find(
       (u) => u.email === "admin@rotc.msuzs.local"
     );
 
-    if (adminExists) {
-      // Ensure the profile is correct
-      const { data: existingProfile } = await (adminSupabase as any)
+    if (existingAdmin) {
+      // Delete the old user completely — password hash from raw SQL is incompatible
+      await adminSupabase.auth.admin.deleteUser(existingAdmin.id);
+
+      // Also clean up any orphaned profile
+      await (adminSupabase as any)
         .from("profiles")
-        .select("id, role, is_approved")
-        .eq("student_number", "admin")
-        .single();
-
-      if (!existingProfile) {
-        // Find the user ID
-        const adminUser = existingUser?.users?.find(
-          (u) => u.email === "admin@rotc.msuzs.local"
-        );
-        if (adminUser) {
-          await (adminSupabase as any).from("profiles").upsert({
-            id: adminUser.id,
-            student_number: "admin",
-            first_name: "System",
-            last_name: "Administrator",
-            email: "admin@rotc.msuzs.local",
-            role: "logistics_officer",
-            is_approved: true,
-            is_active: true,
-            approved_at: new Date().toISOString(),
-            created_at: adminUser.created_at,
-            updated_at: new Date().toISOString(),
-          });
-        }
-      } else if (!existingProfile.is_approved || existingProfile.role !== "logistics_officer") {
-        await (adminSupabase as any)
-          .from("profiles")
-          .update({
-            role: "logistics_officer",
-            is_approved: true,
-            is_active: true,
-            approved_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("student_number", "admin");
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: "Admin account already exists — profile has been verified and corrected.",
-        credentials: {
-          student_id: "admin",
-          password: "admin123",
-        },
-      });
+        .delete()
+        .eq("id", existingAdmin.id);
     }
 
-    // Create admin user via Supabase Admin API (proper flow)
+    // Create fresh admin user via Supabase Admin API (proper password hashing)
     const { data, error } = await adminSupabase.auth.admin.createUser({
       email: "admin@rotc.msuzs.local",
       password: "admin123",
@@ -83,16 +42,21 @@ export async function GET() {
 
     if (data.user) {
       // Update the profile to Logistics Officer with full access
-      await (adminSupabase as any)
+      const { error: updateError } = await (adminSupabase as any)
         .from("profiles")
         .update({
           role: "logistics_officer",
           is_approved: true,
           is_active: true,
           approved_at: new Date().toISOString(),
+          student_number: "admin",
           updated_at: new Date().toISOString(),
         })
         .eq("id", data.user.id);
+
+      if (updateError) {
+        console.error("Profile update error:", updateError);
+      }
     }
 
     return NextResponse.json({
