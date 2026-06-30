@@ -17,6 +17,7 @@ The system now uses **2 roles only**:
    | First Name | `Juan` |
    | Last Name | `Dela Cruz` |
    | **Student ID Number** | `2024-00001` |
+   | **Email (Gmail)** | `juandelacruz@gmail.com` |
    | Contact Number | `0917-123-4567` (optional) |
    | Password | `yourpassword` (min 8 chars) |
 3. Click **"Create Account"**
@@ -24,6 +25,7 @@ The system now uses **2 roles only**:
 > **Note:** You will register as **ROTC Officer** with `is_approved = false`. We'll promote you in the next step.
 > **Login ID:** Your Student ID number (e.g., `2024-00001`)
 > **Default password (if forgotten):** Your Student ID number
+> **Password on approval:** When the Logistics Officer approves your account, your password is automatically reset to your Student ID number
 
 ---
 

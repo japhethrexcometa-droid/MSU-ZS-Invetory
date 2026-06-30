@@ -69,6 +69,7 @@ export default function UsersPage() {
     student_number: "",
     first_name: "",
     last_name: "",
+    email: "",
     contact_number: "",
     role: "rotc_officer",
   });
@@ -104,11 +105,14 @@ export default function UsersPage() {
     if (!authLoading) loadUsers();
   }, [authLoading, loadUsers]);
 
-  const handleApprove = async (userId: string) => {
+  const handleApprove = async (userId: string, studentNumber: string) => {
     if (!profile?.id) return;
     try {
+      // Approve the user
       await approveUser(userId, profile.id);
-      toast.success("User approved");
+      // Auto-reset password to Student ID number
+      await resetUserPassword(userId, studentNumber);
+      toast.success(`User approved — password set to ${studentNumber}`);
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || "Failed to approve user");
@@ -150,7 +154,7 @@ export default function UsersPage() {
       await createOfficerAccount(createForm);
       toast.success(`Account created for ${createForm.first_name} ${createForm.last_name}`);
       setCreateDialogOpen(false);
-      setCreateForm({ student_number: "", first_name: "", last_name: "", contact_number: "", role: "rotc_officer" });
+      setCreateForm({ student_number: "", first_name: "", last_name: "", email: "", contact_number: "", role: "rotc_officer" });
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
@@ -366,7 +370,7 @@ export default function UsersPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {!user.is_approved && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id)} title="Approve user">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id, user.student_number)} title="Approve user">
                               <CheckCircle2 className="w-4 h-4" />
                             </Button>
                           )}
@@ -493,6 +497,16 @@ export default function UsersPage() {
                   className="h-10"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Email (Gmail)</Label>
+              <Input
+                type="email"
+                placeholder="juandelacruz@gmail.com"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                className="h-10"
+              />
             </div>
             <div className="space-y-2">
               <Label>Contact Number (Optional)</Label>

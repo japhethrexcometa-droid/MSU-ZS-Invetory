@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // 2. Parse request body
     const body = await request.json();
-    const { student_number, first_name, last_name, contact_number, role } = body;
+    const { student_number, first_name, last_name, email, contact_number, role } = body;
 
     if (!student_number || !first_name || !last_name) {
       return NextResponse.json(
@@ -50,6 +50,7 @@ export async function POST(request: Request) {
         first_name,
         last_name,
         student_number: student_number.trim(),
+        email: email || null,
         contact_number: contact_number || null,
       },
     });

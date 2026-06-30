@@ -117,6 +117,7 @@ export async function createOfficerAccount(data: {
   student_number: string;
   first_name: string;
   last_name: string;
+  email?: string;
   contact_number?: string;
   role: string;
 }) {
