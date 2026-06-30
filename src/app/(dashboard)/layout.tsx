@@ -29,21 +29,45 @@ export default function DashboardLayout({
         return;
       }
 
-      const { data: profile } = await (supabase as any)
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      // Use server API to look up profile (bypasses RLS)
+      try {
+        const res = await fetch("/api/auth/lookup-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id }),
+        });
 
-      if (profile) {
-        // If user is not approved, show pending page instead of dashboard
-        if (!profile.is_approved) {
-          setLoading(false);
-          setProfile(null);
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.is_approved) {
+            // Build minimal profile from API response
+            const p: Profile = {
+              id: user.id,
+              email: user.email ?? "",
+              first_name: data.first_name ?? "",
+              last_name: data.last_name ?? "",
+              middle_name: null,
+              role: data.role ?? "rotc_officer",
+              student_number: data.student_number ?? null,
+              officer_id: null,
+              contact_number: null,
+              profile_image: null,
+              is_active: true,
+              is_approved: true,
+              approved_by: null,
+              approved_at: null,
+              last_login_at: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            setProfile(p);
+          }
         }
-        setProfile(profile);
+      } catch (e) {
+        // Network error — stay on loading or show pending
+        console.error("Profile lookup failed:", e);
       }
+
       setLoading(false);
     };
 
