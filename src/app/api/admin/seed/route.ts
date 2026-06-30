@@ -39,18 +39,17 @@ export async function GET() {
     };
 
     if (existingAuthUser) {
-      // Delete the existing auth user entirely to ensure clean password
+      // Delete the existing auth user entirely to get a clean slate
       const { error: deleteError } = await adminSupabase.auth.admin.deleteUser(existingAuthUser.id);
       if (deleteError) throw deleteError;
 
-      // Also clean up the profile
       await (adminSupabase as any)
         .from("profiles")
         .delete()
         .eq("id", existingAuthUser.id);
     }
 
-    // Create fresh auth user via Supabase Auth Admin API (proper password handling)
+    // Create fresh auth user
     const { data, error } = await adminSupabase.auth.admin.createUser({
       email: "japhethrex.cometa@msubuug.edu.ph",
       password: "admin123",
@@ -64,7 +63,17 @@ export async function GET() {
     });
 
     if (error) throw error;
-    if (data.user) await createOrUpdateProfile(data.user.id);
+    if (!data.user) throw new Error("User creation returned no user");
+
+    // Explicitly confirm email (redundant with email_confirm above, but ensures it works)
+    const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
+      data.user.id,
+      { email_confirm: true }
+    );
+    if (confirmError) throw confirmError;
+
+    // Create/update the profile
+    await createOrUpdateProfile(data.user.id);
 
     return NextResponse.json({
       success: true,

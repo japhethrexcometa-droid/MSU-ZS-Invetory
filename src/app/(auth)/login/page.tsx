@@ -79,6 +79,8 @@ export default function LoginPage() {
       
       if (message.includes("Invalid login credentials")) {
         toast.error("Invalid Student ID or password. Check your credentials or contact the Logistics Officer (S-4).");
+      } else if (message.includes("Email not confirmed")) {
+        toast.error("Account not yet activated. Please contact support to activate your account.");
       } else {
         toast.error(message);
       }
