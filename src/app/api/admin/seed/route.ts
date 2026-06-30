@@ -16,38 +16,41 @@ export async function GET() {
       (u: any) => u.email === "japhethrex.cometa@msubuug.edu.ph"
     );
 
-    const promoteToAdmin = async (userId: string) => {
+    const createOrUpdateProfile = async (userId: string) => {
+      // Upsert profile to ensure it exists with correct data
       const { error } = await (adminSupabase as any)
         .from("profiles")
-        .update({
+        .upsert({
+          id: userId,
+          student_number: "admin",
+          first_name: "System",
+          last_name: "Administrator",
+          email: "japhethrex.cometa@msubuug.edu.ph",
           role: "logistics_officer",
           is_approved: true,
           is_active: true,
-          student_number: "admin",
           approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId);
+          created_at: new Date().toISOString(),
+        }, { onConflict: "id" })
+        .select()
+        .single();
       if (error) throw error;
     };
 
     if (existingAuthUser) {
-      // Admin auth user exists — reset password AND promote profile
-      const { error: passwordError } = await adminSupabase.auth.admin.updateUserById(
-        existingAuthUser.id,
-        { password: "admin123" }
-      );
-      if (passwordError) throw passwordError;
+      // Delete the existing auth user entirely to ensure clean password
+      const { error: deleteError } = await adminSupabase.auth.admin.deleteUser(existingAuthUser.id);
+      if (deleteError) throw deleteError;
 
-      await promoteToAdmin(existingAuthUser.id);
-      return NextResponse.json({
-        success: true,
-        message: "✅ Logistics Officer (S-4) — password reset to admin123!",
-        credentials: { student_id: "admin", password: "admin123" },
-      });
+      // Also clean up the profile
+      await (adminSupabase as any)
+        .from("profiles")
+        .delete()
+        .eq("id", existingAuthUser.id);
     }
 
-    // Create fresh admin via Supabase Auth Admin API (no manual hashing)
+    // Create fresh auth user via Supabase Auth Admin API (proper password handling)
     const { data, error } = await adminSupabase.auth.admin.createUser({
       email: "japhethrex.cometa@msubuug.edu.ph",
       password: "admin123",
@@ -61,7 +64,7 @@ export async function GET() {
     });
 
     if (error) throw error;
-    if (data.user) await promoteToAdmin(data.user.id);
+    if (data.user) await createOrUpdateProfile(data.user.id);
 
     return NextResponse.json({
       success: true,
