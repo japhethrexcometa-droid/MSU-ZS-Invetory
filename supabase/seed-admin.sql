@@ -1,5 +1,5 @@
 -- Seed Logistics Officer (S-4) Account
--- Student ID: 1008353, Password: 1008353
+-- Student ID: admin, Password: admin123
 -- Run this in Supabase Dashboard → SQL Editor
 
 -- Check if account already exists
@@ -8,12 +8,12 @@ declare
   user_id uuid;
 begin
   -- Check if already exists
-  select id into user_id from auth.users where email = '1008353@rotc.msuzs.local';
-  
+  select id into user_id from auth.users where email = 'admin@rotc.msuzs.local';
+
   if user_id is null then
     -- Create the auth user
     user_id := gen_random_uuid();
-    
+
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password,
       email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
@@ -24,20 +24,20 @@ begin
       user_id,
       'authenticated',
       'authenticated',
-      '1008353@rotc.msuzs.local',
-      crypt('1008353', gen_salt('bf')),
+      'admin@rotc.msuzs.local',
+      crypt('admin123', gen_salt('bf')),
       now(),
       jsonb_build_object(
         'provider', 'email',
         'providers', array['email'],
-        'first_name', 'Logistics',
-        'last_name', 'Officer',
-        'student_number', '1008353'
+        'first_name', 'System',
+        'last_name', 'Administrator',
+        'student_number', 'admin'
       ),
       jsonb_build_object(
-        'first_name', 'Logistics',
-        'last_name', 'Officer',
-        'student_number', '1008353'
+        'first_name', 'System',
+        'last_name', 'Administrator',
+        'student_number', 'admin'
       ),
       now(),
       now(),
@@ -50,10 +50,10 @@ begin
       role, is_approved, is_active, approved_at, created_at, updated_at
     ) values (
       user_id,
-      '1008353',
-      'Logistics',
-      'Officer',
-      'logistics.officer@rotc.msuzs.edu.ph',
+      'admin',
+      'System',
+      'Administrator',
+      'admin@rotc.msuzs.local',
       'logistics_officer',
       true,
       true,
@@ -63,8 +63,8 @@ begin
     );
 
     raise notice '✅ Logistics Officer (S-4) account created!';
-    raise notice '   Student ID: 1008353';
-    raise notice '   Password: 1008353';
+    raise notice '   Student ID: admin';
+    raise notice '   Password: admin123';
   else
     -- Update existing account to ensure it has correct role
     update public.profiles set
@@ -74,8 +74,8 @@ begin
     where id = user_id;
 
     raise notice '✅ Existing account updated to Logistics Officer (S-4)';
-    raise notice '   Student ID: 1008353';
-    raise notice '   Password: 1008353 (reset via app if needed)';
+    raise notice '   Student ID: admin';
+    raise notice '   Password: admin123 (reset via app if needed)';
   end if;
 end;
 $$;

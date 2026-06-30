@@ -105,14 +105,11 @@ export default function UsersPage() {
     if (!authLoading) loadUsers();
   }, [authLoading, loadUsers]);
 
-  const handleApprove = async (userId: string, studentNumber: string) => {
+  const handleApprove = async (userId: string) => {
     if (!profile?.id) return;
     try {
-      // Approve the user
       await approveUser(userId, profile.id);
-      // Auto-reset password to Student ID number
-      await resetUserPassword(userId, studentNumber);
-      toast.success(`User approved — password set to ${studentNumber}`);
+      toast.success("User approved");
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || "Failed to approve user");
@@ -370,7 +367,7 @@ export default function UsersPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {!user.is_approved && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id, user.student_number)} title="Approve user">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id)} title="Approve user">
                               <CheckCircle2 className="w-4 h-4" />
                             </Button>
                           )}
