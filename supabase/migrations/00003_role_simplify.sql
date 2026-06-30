@@ -1,7 +1,7 @@
 -- =============================================================
 -- MSU-ZS ROTC Inventory System
 -- Migration 00003: Simplify to 2 roles (Logistics Officer + ROTC Officer)
--- Login via Student ID (stored as email@rotc.msuzs.local format)
+-- Two role system: Logistics Officer (S-4) and ROTC Officer
 -- =============================================================
 
 -- 1. Change user_role enum from 7 roles → 2 roles

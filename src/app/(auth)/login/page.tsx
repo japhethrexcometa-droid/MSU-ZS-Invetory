@@ -28,33 +28,40 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // Format Student ID as email for Supabase Auth
-      const authEmail = `${studentId.trim()}@rotc.msuzs.local`;
+      // Step 1: Look up the email associated with this Student ID
+      const { data: email, error: lookupError } = await (supabase as any)
+        .rpc("get_email_by_student_number", {
+          p_student_number: studentId.trim(),
+        });
 
+      if (lookupError || !email) {
+        toast.error("Account not found. Please check your Student ID or contact the Logistics Officer (S-4).");
+        return;
+      }
+
+      // Step 2: Sign in with the actual email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: authEmail,
+        email,
         password,
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Check if user is approved (use any to bypass strict type inference)
+        // Check if user is approved
         const { data: profile } = await (supabase as any)
           .from("profiles")
-          .select("is_approved, role, first_name, last_name")
+          .select("is_approved, role, first_name, last_name, student_number")
           .eq("id", data.user.id)
           .single();
 
         if (!profile) {
-          // Profile doesn't exist yet — sign out and ask user to wait
           await supabase.auth.signOut();
           toast.error("Account not found. Please contact the Logistics Officer (S-4).");
           return;
         }
 
         if (!profile.is_approved) {
-          // User not approved — sign out immediately
           await supabase.auth.signOut();
           toast.error(
             `Account pending approval. Please wait for the Logistics Officer (S-4) to approve your account.`,
@@ -63,7 +70,6 @@ export default function LoginPage() {
           return;
         }
 
-        // User is approved — allow login
         toast.success(`Welcome, ${profile.first_name}!`);
         router.push("/dashboard");
         router.refresh();
@@ -83,7 +89,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/50 to-background p-4">
-      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
@@ -152,8 +157,7 @@ export default function LoginPage() {
             <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
               <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
-                Having trouble logging in? Contact the <strong>Logistics Officer (S-4)</strong> 
-                for password reset or account approval.
+                Login with your Student ID number. Having trouble? Contact the <strong>Logistics Officer (S-4)</strong>.
               </p>
             </div>
 

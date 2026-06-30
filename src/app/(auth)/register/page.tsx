@@ -38,7 +38,7 @@ export default function RegisterPage() {
       return;
     }
     if (!formData.email.trim()) {
-      toast.error("Email (Gmail) is required");
+      toast.error("Email is required");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -52,18 +52,16 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Use Student ID as auth email format so login with Student ID works
-      const authEmail = `${formData.student_number.trim()}@rotc.msuzs.local`;
-
+      // Use the user's actual email as the auth email
       const { data, error } = await supabase.auth.signUp({
-        email: authEmail,
+        email: formData.email.trim(),
         password: formData.password,
         options: {
           data: {
             first_name: formData.first_name,
             last_name: formData.last_name,
             student_number: formData.student_number.trim(),
-            email: formData.email.trim(), // Store actual Gmail in metadata
+            email: formData.email.trim(),
             contact_number: formData.contact_number || undefined,
           },
         },
@@ -149,10 +147,13 @@ export default function RegisterPage() {
                 className="h-11"
                 autoComplete="username"
               />
+              <p className="text-xs text-muted-foreground">
+                Use this to log in
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email (Gmail)</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"

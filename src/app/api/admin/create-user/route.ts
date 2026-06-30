@@ -36,21 +36,27 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!email || !email.trim()) {
+      return NextResponse.json(
+        { error: "Email is required to create an account" },
+        { status: 400 }
+      );
+    }
+
     const validRole = role === "logistics_officer" ? "logistics_officer" : "rotc_officer";
 
-    // 3. Create the user via service_role admin client
+    // 3. Create the user via service_role admin client using the ACTUAL email
     const adminSupabase = createAdminClient();
-    const authEmail = `${student_number.trim()}@rotc.msuzs.local`;
 
     const { data: authUser, error: createError } = await adminSupabase.auth.admin.createUser({
-      email: authEmail,
+      email: email.trim(),
       password: student_number.trim(), // Default password = Student ID
       email_confirm: true, // Auto-confirm (no email verification needed)
       user_metadata: {
         first_name,
         last_name,
         student_number: student_number.trim(),
-        email: email || null,
+        email: email.trim(),
         contact_number: contact_number || null,
       },
     });

@@ -146,6 +146,10 @@ export default function UsersPage() {
       toast.error("Student ID, first name, and last name are required");
       return;
     }
+    if (!createForm.email) {
+      toast.error("Email is required to create an account");
+      return;
+    }
     setCreating(true);
     try {
       await createOfficerAccount(createForm);
@@ -329,10 +333,7 @@ export default function UsersPage() {
                           <div>
                             <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {user.email?.includes("@rotc.msuzs.local")
-                                ? `ID: ${user.student_number || "—"}`
-                                : user.email
-                              }
+                              {user.email || `ID: ${user.student_number || "—"}`}
                             </p>
                             {user.student_number && (
                               <p className="text-[11px] text-muted-foreground font-mono">{user.student_number}</p>
