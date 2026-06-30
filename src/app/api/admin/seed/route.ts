@@ -32,11 +32,17 @@ export async function GET() {
     };
 
     if (existingAuthUser) {
-      // Admin auth user exists — promote profile
+      // Admin auth user exists — reset password AND promote profile
+      const { error: passwordError } = await adminSupabase.auth.admin.updateUserById(
+        existingAuthUser.id,
+        { password: "admin123" }
+      );
+      if (passwordError) throw passwordError;
+
       await promoteToAdmin(existingAuthUser.id);
       return NextResponse.json({
         success: true,
-        message: "✅ Your account is now Logistics Officer (S-4)!",
+        message: "✅ Logistics Officer (S-4) — password reset to admin123!",
         credentials: { student_id: "admin", password: "admin123" },
       });
     }
