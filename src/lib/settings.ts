@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 import type { SystemSetting } from "@/types/database";
+import {
+  updateSettingSchema,
+  createSettingSchema,
+  logActivitySchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 export async function fetchSettings() {
   const supabase = createClient();
@@ -24,11 +30,8 @@ export async function fetchSetting(key: string) {
   return data as unknown as SystemSetting;
 }
 
-export async function updateSetting(
-  key: string,
-  value: any,
-  updatedBy?: string
-) {
+export async function updateSetting(key: string, value: unknown, updatedBy?: string) {
+  validateOrThrow(updateSettingSchema, { key, value, updatedBy });
   const supabase = createClient();
   const { data, error } = await (supabase as any)
     .from("system_settings")
@@ -44,11 +47,8 @@ export async function updateSetting(
   return data as unknown as SystemSetting;
 }
 
-export async function createSetting(data: {
-  key: string;
-  value: any;
-  description?: string;
-}) {
+export async function createSetting(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createSettingSchema, raw);
   const supabase = createClient();
   const { data: setting, error } = await (supabase as any)
     .from("system_settings")
@@ -83,14 +83,8 @@ export async function fetchActivityLog(limit = 50) {
   return data;
 }
 
-export async function logActivity(data: {
-  user_id: string;
-  activity_type: string;
-  description: string;
-  reference_type?: string;
-  reference_id?: string;
-  metadata?: Record<string, any>;
-}) {
+export async function logActivity(raw: Record<string, unknown>) {
+  const data = validateOrThrow(logActivitySchema, raw);
   const supabase = createClient();
   const { error } = await (supabase as any)
     .from("activity_log")

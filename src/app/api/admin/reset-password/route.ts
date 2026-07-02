@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { resetPasswordSchema, validateOrThrow } from "@/lib/validations";
 
 export async function POST(request: Request) {
   try {
@@ -25,16 +26,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Parse request body
+    // 2. Parse and validate request body
     const body = await request.json();
-    const { userId, password } = body;
-
-    if (!userId || !password) {
-      return NextResponse.json(
-        { error: "User ID and new password are required" },
-        { status: 400 }
-      );
-    }
+    const { userId, password } = validateOrThrow(resetPasswordSchema, body);
 
     // 3. Update the password via service_role admin client
     const adminSupabase = createAdminClient();

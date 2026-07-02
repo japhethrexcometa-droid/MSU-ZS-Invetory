@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { createOfficerAccountSchema, validateOrThrow } from "@/lib/validations";
 
 export async function POST(request: Request) {
   try {
@@ -25,25 +26,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Parse request body
+    // 2. Parse and validate request body
     const body = await request.json();
-    const { student_number, first_name, last_name, email, contact_number, role } = body;
-
-    if (!student_number || !first_name || !last_name) {
-      return NextResponse.json(
-        { error: "Student ID, first name, and last name are required" },
-        { status: 400 }
-      );
-    }
-
-    if (!email || !email.trim()) {
-      return NextResponse.json(
-        { error: "Email is required to create an account" },
-        { status: 400 }
-      );
-    }
-
-    const validRole = role === "logistics_officer" ? "logistics_officer" : "rotc_officer";
+    const parsed = validateOrThrow(createOfficerAccountSchema, body);
+    const { student_number, first_name, last_name, email, contact_number, role: validRole } = parsed;
 
     // 3. Create the user via service_role admin client using the ACTUAL email
     const adminSupabase = createAdminClient();

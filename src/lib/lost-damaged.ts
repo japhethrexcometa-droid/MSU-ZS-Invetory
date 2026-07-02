@@ -1,5 +1,12 @@
 import { createClient } from "@/lib/supabase/client";
 import type { LostReport, DamageReport } from "@/types/database";
+import {
+  createLostReportSchema,
+  updateLostReportSchema,
+  createDamageReportSchema,
+  updateDamageReportSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 // ─── Lost Reports ─────────────────────────────────────────
 
@@ -61,14 +68,8 @@ export async function fetchLostReportById(id: string) {
   return data as unknown as LostReport;
 }
 
-export async function createLostReport(data: {
-  asset_id: string;
-  transaction_id?: string;
-  reporter_id: string;
-  date_lost: string;
-  location_lost?: string;
-  description: string;
-}) {
+export async function createLostReport(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createLostReportSchema, raw);
   const supabase = createClient();
   const { data: report, error } = await (supabase as any)
     .from("lost_reports")
@@ -87,17 +88,8 @@ export async function createLostReport(data: {
   return report as unknown as LostReport;
 }
 
-export async function updateLostReport(
-  id: string,
-  data: Partial<{
-    investigation_notes: string;
-    investigating_officer_id: string;
-    officer_remarks: string;
-    replacement_status: string;
-    is_approved: boolean;
-    approved_by: string;
-  }>
-) {
+export async function updateLostReport(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateLostReportSchema, raw);
   const supabase = createClient();
   const { data: report, error } = await (supabase as any)
     .from("lost_reports")
@@ -168,13 +160,8 @@ export async function fetchDamageReportById(id: string) {
   return data as unknown as DamageReport;
 }
 
-export async function createDamageReport(data: {
-  asset_id: string;
-  transaction_id?: string;
-  reporter_id: string;
-  damage_description: string;
-  estimated_repair_cost?: number;
-}) {
+export async function createDamageReport(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createDamageReportSchema, raw);
   const supabase = createClient();
   const { data: report, error } = await (supabase as any)
     .from("damage_reports")
@@ -192,15 +179,8 @@ export async function createDamageReport(data: {
   return report as unknown as DamageReport;
 }
 
-export async function updateDamageReport(
-  id: string,
-  data: Partial<{
-    actual_repair_cost: number;
-    assigned_technician: string;
-    repair_status: string;
-    repair_notes: string;
-  }>
-) {
+export async function updateDamageReport(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateDamageReportSchema, raw);
   const supabase = createClient();
   const { data: report, error } = await (supabase as any)
     .from("damage_reports")

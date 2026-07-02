@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import type { MaintenanceRecord } from "@/types/database";
+import {
+  createMaintenanceSchema,
+  updateMaintenanceSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 export async function fetchMaintenanceRecords(params: {
   search?: string;
@@ -60,16 +65,8 @@ export async function fetchMaintenanceById(id: string) {
   return data as unknown as MaintenanceRecord;
 }
 
-export async function createMaintenanceRecord(data: {
-  asset_id: string;
-  maintenance_type: string;
-  description: string;
-  scheduled_date?: string;
-  performed_by?: string;
-  cost?: number;
-  notes?: string;
-  next_maintenance_date?: string;
-}) {
+export async function createMaintenanceRecord(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createMaintenanceSchema, raw);
   const supabase = createClient();
 
   const { data: record, error } = await (supabase as any)
@@ -99,21 +96,8 @@ export async function createMaintenanceRecord(data: {
   return record as unknown as MaintenanceRecord;
 }
 
-export async function updateMaintenanceRecord(
-  id: string,
-  data: Partial<{
-    maintenance_type: string;
-    description: string;
-    scheduled_date: string;
-    completed_date: string;
-    performed_by: string;
-    cost: number;
-    notes: string;
-    status: string;
-    next_maintenance_date: string;
-    health_score: number;
-  }>
-) {
+export async function updateMaintenanceRecord(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateMaintenanceSchema, raw);
   const supabase = createClient();
 
   const { data: record, error } = await (supabase as any)

@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
 import type { BorrowTransaction, Asset } from "@/types/database";
+import {
+  createBorrowRequestSchema,
+  approveBorrowSchema,
+  releaseBorrowSchema,
+  processReturnSchema,
+  reportLostFromBorrowSchema,
+  reportDamageFromBorrowSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 // Fetch borrow transactions with filters
 export async function fetchBorrowTransactions(params: {
@@ -84,12 +93,8 @@ export async function fetchBorrowById(id: string) {
 }
 
 // Create a new borrow request
-export async function createBorrowRequest(data: {
-  asset_id: string;
-  borrower_id: string;
-  expected_return_date: string;
-  purpose?: string;
-}) {
+export async function createBorrowRequest(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createBorrowRequestSchema, raw);
   const supabase = createClient();
 
   const { data: transaction, error } = await (supabase as any)
@@ -110,6 +115,7 @@ export async function createBorrowRequest(data: {
 
 // Approve a borrow request
 export async function approveBorrowRequest(id: string, approvedById: string | null) {
+  validateOrThrow(approveBorrowSchema, { id, approvedById });
   const supabase = createClient();
 
   const { data, error } = await (supabase as any)
@@ -128,6 +134,7 @@ export async function approveBorrowRequest(id: string, approvedById: string | nu
 
 // Reject a borrow request
 export async function rejectBorrowRequest(id: string, approvedById: string | null) {
+  validateOrThrow(approveBorrowSchema, { id, approvedById });
   const supabase = createClient();
 
   const { data, error } = await (supabase as any)
@@ -152,6 +159,13 @@ export async function releaseBorrowItem(
   borrowerSignature?: string,
   officerSignature?: string
 ) {
+  validateOrThrow(releaseBorrowSchema, {
+    id,
+    releasedById,
+    conditionBefore,
+    borrowerSignature,
+    officerSignature,
+  });
   const supabase = createClient();
 
   const { data: transaction, error } = await (supabase as any)
@@ -182,14 +196,9 @@ export async function releaseBorrowItem(
 // Process a return
 export async function processReturn(
   id: string,
-  data: {
-    verified_by: string | null;
-    condition_after: string;
-    return_notes?: string;
-    penalty_amount?: number;
-    penalty_paid?: boolean;
-  }
+  raw: Record<string, unknown>
 ) {
+  const data = validateOrThrow(processReturnSchema, { ...raw, id });
   const supabase = createClient();
 
   const { data: transaction, error } = await (supabase as any)
@@ -302,13 +311,9 @@ export async function fetchAvailableAssets() {
 // Report an item as lost from a borrow transaction
 export async function reportLostFromBorrow(
   transactionId: string,
-  data: {
-    reporter_id: string;
-    date_lost: string;
-    location_lost?: string;
-    description: string;
-  }
+  raw: Record<string, unknown>
 ) {
+  const data = validateOrThrow(reportLostFromBorrowSchema, { ...raw, transactionId });
   const supabase = createClient();
 
   // Get the transaction to find the asset
@@ -353,12 +358,9 @@ export async function reportLostFromBorrow(
 // Report damage from a borrow transaction
 export async function reportDamageFromBorrow(
   transactionId: string,
-  data: {
-    reporter_id: string;
-    damage_description: string;
-    estimated_repair_cost?: number;
-  }
+  raw: Record<string, unknown>
 ) {
+  const data = validateOrThrow(reportDamageFromBorrowSchema, { ...raw, transactionId });
   const supabase = createClient();
 
   const { data: txn } = await (supabase as any)

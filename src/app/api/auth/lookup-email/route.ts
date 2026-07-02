@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { lookupEmailSchema, validateOrThrow } from "@/lib/validations";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const parsed = validateOrThrow(lookupEmailSchema, body);
     const adminSupabase = createAdminClient();
 
     // Case 1: Look up email by student_number (for login)
-    if (body.student_number && typeof body.student_number === "string") {
+    if (parsed.student_number) {
       const { data, error } = await (adminSupabase as any)
         .from("profiles")
         .select("email")
@@ -26,11 +28,11 @@ export async function POST(request: Request) {
     }
 
     // Case 2: Look up profile by user_id (for approval check after login)
-    if (body.user_id && typeof body.user_id === "string") {
+    if (parsed.user_id) {
       const { data, error } = await (adminSupabase as any)
         .from("profiles")
         .select("is_approved, role, first_name, last_name, student_number")
-        .eq("id", body.user_id)
+        .eq("id", parsed.user_id)
         .maybeSingle();
 
       if (error) throw error;
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json(data);
     }
 
+    // Fallback (shouldn't reach here due to refine check, but guard just in case)
     return NextResponse.json(
       { error: "Provide student_number or user_id" },
       { status: 400 }

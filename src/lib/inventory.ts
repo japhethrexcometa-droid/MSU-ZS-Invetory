@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Asset } from "@/types/database";
+import {
+  createAssetSchema,
+  updateAssetSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 // Fetch all inventory items with optional filters
 export async function fetchInventory(params: {
@@ -91,31 +96,8 @@ export async function fetchAssetById(id: string) {
 }
 
 // Create a new asset
-export async function createAsset(data: {
-  item_name: string;
-  category_id?: string;
-  description?: string;
-  brand?: string;
-  model?: string;
-  serial_number?: string;
-  property_number?: string;
-  supplier?: string;
-  purchase_date?: string;
-  purchase_cost?: number;
-  funding_source?: string;
-  location_id?: string;
-  assigned_officer_id?: string;
-  condition: string;
-  status: string;
-  image_url?: string;
-  qr_code?: string;
-  warranty_expiry?: string;
-  useful_life_months?: number;
-  is_radio?: boolean;
-  radio_frequency?: string;
-  battery_status?: string;
-  remarks?: string;
-}) {
+export async function createAsset(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createAssetSchema, raw);
   const supabase = createClient();
 
   const { data: asset, error } = await (supabase as any)
@@ -153,34 +135,8 @@ export async function createAsset(data: {
 }
 
 // Update an existing asset
-export async function updateAsset(
-  id: string,
-  data: Partial<{
-    item_name: string;
-    category_id: string;
-    description: string;
-    brand: string;
-    model: string;
-    serial_number: string;
-    property_number: string;
-    supplier: string;
-    purchase_date: string;
-    purchase_cost: number;
-    funding_source: string;
-    location_id: string;
-    assigned_officer_id: string;
-    condition: string;
-    status: string;
-    image_url: string;
-    qr_code: string;
-    warranty_expiry: string;
-    useful_life_months: number;
-    is_radio: boolean;
-    radio_frequency: string;
-    battery_status: string;
-    remarks: string;
-  }>
-) {
+export async function updateAsset(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateAssetSchema, raw);
   const supabase = createClient();
 
   const { data: asset, error } = await (supabase as any)

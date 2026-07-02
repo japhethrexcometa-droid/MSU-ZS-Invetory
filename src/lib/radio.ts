@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Asset, BorrowTransaction, RadioTracking } from "@/types/database";
+import {
+  assignRadioSchema,
+  returnRadioSchema,
+  updateBatterySchema,
+  updateFrequencySchema,
+  markRadioMaintenanceSchema,
+  reportRadioLostSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 // ─── Types ───────────────────────────────────────────────
 export type RadioStatus = "available" | "assigned" | "borrowed" | "maintenance" | "lost";
@@ -171,15 +180,8 @@ export async function fetchRadioTrackingHistory(assetId: string) {
 }
 
 // ─── Assign Radio to a Holder ─────────────────────────────
-export async function assignRadio(data: {
-  asset_id: string;
-  current_holder_id: string;
-  frequency?: string;
-  battery_status?: string;
-  assigned_officer_id?: string;
-  location?: string;
-  notes?: string;
-}) {
+export async function assignRadio(raw: Record<string, unknown>) {
+  const data = validateOrThrow(assignRadioSchema, raw);
   const supabase = createClient();
 
   // 1. Create a radio_tracking record
@@ -215,13 +217,8 @@ export async function assignRadio(data: {
 }
 
 // ─── Process Radio Return ─────────────────────────────────
-export async function returnRadio(data: {
-  asset_id: string;
-  tracking_id: string;
-  battery_status?: string;
-  condition?: string;
-  notes?: string;
-}) {
+export async function returnRadio(raw: Record<string, unknown>) {
+  const data = validateOrThrow(returnRadioSchema, raw);
   const supabase = createClient();
 
   // 1. Update the tracking record
@@ -256,10 +253,8 @@ export async function returnRadio(data: {
 }
 
 // ─── Update Radio Battery Status ──────────────────────────
-export async function updateRadioBatteryStatus(
-  assetId: string,
-  batteryStatus: string
-) {
+export async function updateRadioBatteryStatus(assetId: string, batteryStatus: string) {
+  validateOrThrow(updateBatterySchema, { assetId, batteryStatus });
   const supabase = createClient();
 
   const { error } = await (supabase as any)
@@ -271,10 +266,8 @@ export async function updateRadioBatteryStatus(
 }
 
 // ─── Update Radio Frequency ───────────────────────────────
-export async function updateRadioFrequency(
-  assetId: string,
-  frequency: string
-) {
+export async function updateRadioFrequency(assetId: string, frequency: string) {
+  validateOrThrow(updateFrequencySchema, { assetId, frequency });
   const supabase = createClient();
 
   const { error } = await (supabase as any)
@@ -286,14 +279,8 @@ export async function updateRadioFrequency(
 }
 
 // ─── Report Radio as Lost ─────────────────────────────────
-export async function reportRadioLost(data: {
-  asset_id: string;
-  reporter_id: string;
-  date_lost: string;
-  location_lost?: string;
-  description: string;
-  tracking_id?: string;
-}) {
+export async function reportRadioLost(raw: Record<string, unknown>) {
+  const data = validateOrThrow(reportRadioLostSchema, raw);
   const supabase = createClient();
 
   // 1. Update asset status to lost
@@ -328,14 +315,8 @@ export async function reportRadioLost(data: {
 }
 
 // ─── Mark Radio for Maintenance ───────────────────────────
-export async function markRadioMaintenance(
-  assetId: string,
-  data: {
-    description: string;
-    maintenance_type?: string;
-    scheduled_date?: string;
-  }
-) {
+export async function markRadioMaintenance(assetId: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(markRadioMaintenanceSchema, { ...raw, assetId });
   const supabase = createClient();
 
   // 1. Update asset status

@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Location } from "@/types/database";
+import {
+  createLocationSchema,
+  updateLocationSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 export async function fetchLocations(search?: string) {
   const supabase = createClient();
@@ -31,13 +36,8 @@ export async function fetchLocationById(id: string) {
   return data as unknown as Location;
 }
 
-export async function createLocation(data: {
-  building: string;
-  room?: string;
-  cabinet?: string;
-  shelf?: string;
-  description?: string;
-}) {
+export async function createLocation(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createLocationSchema, raw);
   const supabase = createClient();
   const { data: location, error } = await (supabase as any)
     .from("locations")
@@ -55,17 +55,8 @@ export async function createLocation(data: {
   return location as unknown as Location;
 }
 
-export async function updateLocation(
-  id: string,
-  data: Partial<{
-    building: string;
-    room: string;
-    cabinet: string;
-    shelf: string;
-    description: string;
-    is_active: boolean;
-  }>
-) {
+export async function updateLocation(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateLocationSchema, raw);
   const supabase = createClient();
   const { data: location, error } = await (supabase as any)
     .from("locations")

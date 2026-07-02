@@ -1,5 +1,12 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
+import {
+  updateUserSchema,
+  approveUserSchema,
+  createOfficerAccountSchema,
+  resetPasswordSchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 export async function fetchUsers(params: {
   search?: string;
@@ -48,18 +55,8 @@ export async function fetchUserById(id: string) {
   return data as unknown as Profile;
 }
 
-export async function updateUser(
-  id: string,
-  data: Partial<{
-    role: string;
-    is_active: boolean;
-    is_approved: boolean;
-    approved_by: string;
-    first_name: string;
-    last_name: string;
-    contact_number: string;
-  }>
-) {
+export async function updateUser(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateUserSchema, raw);
   const supabase = createClient();
   const { data: user, error } = await (supabase as any)
     .from("profiles")
@@ -73,6 +70,7 @@ export async function updateUser(
 }
 
 export async function approveUser(id: string, approvedById: string) {
+  validateOrThrow(approveUserSchema, { id, approvedById });
   const supabase = createClient();
   const { data, error } = await (supabase as any)
     .from("profiles")
@@ -113,14 +111,8 @@ export async function fetchUsersStats() {
   };
 }
 
-export async function createOfficerAccount(data: {
-  student_number: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  contact_number?: string;
-  role: string;
-}) {
+export async function createOfficerAccount(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createOfficerAccountSchema, raw);
   const supabase = createClient();
 
   // Create via server API route (needs service_role)
@@ -136,6 +128,7 @@ export async function createOfficerAccount(data: {
 }
 
 export async function resetUserPassword(userId: string, studentNumber: string) {
+  validateOrThrow(resetPasswordSchema, { userId, password: studentNumber });
   const supabase = createClient();
 
   const response = await fetch("/api/admin/reset-password", {

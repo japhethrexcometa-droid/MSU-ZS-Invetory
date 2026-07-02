@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/types/database";
+import {
+  createCategorySchema,
+  updateCategorySchema,
+  validateOrThrow,
+} from "@/lib/validations";
 
 export async function fetchCategories(search?: string) {
   const supabase = createClient();
@@ -31,13 +36,8 @@ export async function fetchCategoryById(id: string) {
   return data as unknown as Category;
 }
 
-export async function createCategory(data: {
-  name: string;
-  slug: string;
-  description?: string;
-  parent_id?: string;
-  icon?: string;
-}) {
+export async function createCategory(raw: Record<string, unknown>) {
+  const data = validateOrThrow(createCategorySchema, raw);
   const supabase = createClient();
   const { data: category, error } = await (supabase as any)
     .from("categories")
@@ -55,17 +55,8 @@ export async function createCategory(data: {
   return category as unknown as Category;
 }
 
-export async function updateCategory(
-  id: string,
-  data: Partial<{
-    name: string;
-    slug: string;
-    description: string;
-    parent_id: string;
-    icon: string;
-    is_active: boolean;
-  }>
-) {
+export async function updateCategory(id: string, raw: Record<string, unknown>) {
+  const data = validateOrThrow(updateCategorySchema, raw);
   const supabase = createClient();
   const { data: category, error } = await (supabase as any)
     .from("categories")
