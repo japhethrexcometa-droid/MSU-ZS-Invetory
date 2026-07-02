@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/database";
 import { Loader2, ShieldAlert } from "lucide-react";
@@ -136,8 +137,11 @@ export default function DashboardLayout({
           isCollapsed ? "ml-16" : "ml-64"
         )}
       >
-        <div className="p-4 md:p-6 lg:p-8">{children}</div>
+        <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-8">{children}</div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }
