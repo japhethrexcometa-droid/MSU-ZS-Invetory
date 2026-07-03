@@ -91,7 +91,7 @@ export default function UsersPage() {
         fetchUsersStats(),
       ]);
       // Filter out admin users from the table so they can't manage themselves
-      const filteredUsers = result.data.filter(u => u.role !== 'logistics_officer' && u.role !== 'system_administrator');
+      const filteredUsers = result.data.filter(u => u.role !== 'logistics_officer');
       setUsers(filteredUsers);
       setTotalCount(result.count);
       setStats(statsData);
