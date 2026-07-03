@@ -108,12 +108,43 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-          <Bell className="h-4 w-4" />
-          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-            3
-          </span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+              <Bell className="h-4 w-4" />
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                3
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel className="font-semibold">Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="flex flex-col max-h-[300px] overflow-y-auto">
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                <span className="text-sm font-medium">New Pending Request</span>
+                <span className="text-xs text-muted-foreground">Cadet Doe requested to borrow a Radio.</span>
+                <span className="text-[10px] text-muted-foreground mt-1">2 minutes ago</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                <span className="text-sm font-medium">Low Inventory Alert</span>
+                <span className="text-xs text-muted-foreground">M16 Rifles are running low in Armory A.</span>
+                <span className="text-[10px] text-muted-foreground mt-1">1 hour ago</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                <span className="text-sm font-medium">Maintenance Complete</span>
+                <span className="text-xs text-muted-foreground">Radio 04 has been repaired.</span>
+                <span className="text-[10px] text-muted-foreground mt-1">2 hours ago</span>
+              </DropdownMenuItem>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer">
+              View all notifications
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* User Menu */}
         <DropdownMenu>
