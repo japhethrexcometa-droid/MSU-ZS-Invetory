@@ -169,7 +169,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {notifications.length === 0 ? (
-              <DropdownMenuItem disabled className="justify-center p-4 text-center text-sm text-muted-foreground">
+              <DropdownMenuItem className="justify-center p-4 text-center text-sm text-muted-foreground cursor-default focus:bg-transparent focus:text-muted-foreground">
                 No new notifications
               </DropdownMenuItem>
             ) : (
