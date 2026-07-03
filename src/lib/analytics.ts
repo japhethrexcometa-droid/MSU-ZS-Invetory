@@ -44,7 +44,7 @@ export async function fetchDashboardStats() {
     // Users
     totalUsers: profiles.length,
     activeUsers: profiles.filter((p: any) => p.is_active).length,
-    pendingApprovals: profiles.filter((p: any) => !p.is_approved).length,
+    pendingApprovals: profiles.filter((p: any) => !p.is_approved && p.is_active).length,
 
     // Reports
     totalLostReports: lost.length,

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
-import { fetchUsers, approveUser, updateUser, fetchUsersStats, createOfficerAccount, resetUserPassword, USER_ROLE_CONFIG } from "@/lib/users";
+import { fetchUsers, approveUser, rejectUser, deleteUser, updateUser, fetchUsersStats, createOfficerAccount, resetUserPassword, USER_ROLE_CONFIG } from "@/lib/users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,7 @@ import {
   UserPlus,
   KeyRound,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -56,6 +57,16 @@ export default function UsersPage() {
   const [searchInput, setSearchInput] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
+  // Reject confirmation
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingUser, setRejectingUser] = useState<any>(null);
+  const [rejecting, setRejecting] = useState(false);
+
+  // Delete confirmation
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Edit role dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -125,6 +136,38 @@ export default function UsersPage() {
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || "Failed to update user");
+    }
+  };
+
+  const handleRejectUser = async () => {
+    if (!rejectingUser) return;
+    setRejecting(true);
+    try {
+      await rejectUser(rejectingUser.id);
+      toast.success(`User ${rejectingUser.first_name} ${rejectingUser.last_name} rejected`);
+      setRejectDialogOpen(false);
+      setRejectingUser(null);
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reject user");
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+    setDeleting(true);
+    try {
+      await deleteUser(deletingUser.id);
+      toast.success(`User ${deletingUser.first_name} ${deletingUser.last_name} has been removed`);
+      setDeleteDialogOpen(false);
+      setDeletingUser(null);
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete user");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -290,7 +333,7 @@ export default function UsersPage() {
               <SelectContent>
                 <SelectItem value="">All</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="inactive">Deactivated</SelectItem>
                 <SelectItem value="pending">Pending Approval</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
               </SelectContent>
@@ -356,9 +399,17 @@ export default function UsersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
-                          <div className={`w-2 h-2 rounded-full ${!user.is_approved ? "bg-warning" : user.is_active ? "bg-success" : "bg-destructive"}`} />
+                          <div className={`w-2 h-2 rounded-full ${
+                            !user.is_approved && user.is_active ? "bg-warning" :
+                            !user.is_approved && !user.is_active ? "bg-destructive" :
+                            user.is_approved && user.is_active ? "bg-success" :
+                            "bg-muted-foreground"
+                          }`} />
                           <span className="text-xs">
-                            {!user.is_approved ? "Pending Approval" : user.is_active ? "Active" : "Inactive"}
+                            {!user.is_approved && user.is_active ? "Pending Approval" :
+                             !user.is_approved && !user.is_active ? "Rejected" :
+                             user.is_approved && user.is_active ? "Active" :
+                             "Deactivated"}
                           </span>
                         </div>
                       </td>
@@ -369,10 +420,22 @@ export default function UsersPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {!user.is_approved && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id)} title="Approve user">
-                              <CheckCircle2 className="w-4 h-4" />
-                            </Button>
+                          {!user.is_approved && user.is_active && (
+                            <>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(user.id)} title="Approve user">
+                                <CheckCircle2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                                onClick={() => {
+                                  setRejectingUser(user);
+                                  setRejectDialogOpen(true);
+                                }}
+                                title="Reject user"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </>
                           )}
                           {user.student_number && (
                             <Button
@@ -384,25 +447,30 @@ export default function UsersPage() {
                             </Button>
                           )}
                           {user.role !== "logistics_officer" && (
-                            <Button
-                              variant="ghost" size="icon" className="h-8 w-8"
-                              onClick={() => {
-                                setEditingUser(user);
-                                setEditRole(user.role);
-                                setEditDialogOpen(true);
-                              }}
-                              title="Change role"
-                            >
-                              <UserCog className="w-4 h-4" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="ghost" size="icon" className="h-8 w-8"
+                                onClick={() => {
+                                  setEditingUser(user);
+                                  setEditRole(user.role);
+                                  setEditDialogOpen(true);
+                                }}
+                                title="Change role"
+                              >
+                                <UserCog className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                                onClick={() => {
+                                  setDeletingUser(user);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                title="Delete user"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
                           )}
-                          <Button
-                            variant="ghost" size="icon" className="h-8 w-8 text-destructive"
-                            onClick={() => handleToggleActive(user.id, user.is_active)}
-                            title={user.is_active ? "Deactivate" : "Activate"}
-                          >
-                            {user.is_active ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -426,6 +494,56 @@ export default function UsersPage() {
           </div>
         )}
       </Card>
+
+      {/* Reject Confirmation Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reject User</DialogTitle>
+            <DialogDescription>
+              This will reject {rejectingUser?.first_name} {rejectingUser?.last_name}&apos;s registration.
+              They will be unable to log in. You can reactivate them later if needed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setRejectDialogOpen(false); setRejectingUser(null); }} className="inline-flex">Cancel</Button>
+            <Button variant="destructive" onClick={handleRejectUser} disabled={rejecting}>
+              {rejecting && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />}
+              <XCircle className="w-4 h-4 mr-1.5" />
+              Reject User
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription className="space-y-2">
+              <p>
+                Are you sure you want to deactivate <strong>{deletingUser?.first_name} {deletingUser?.last_name}</strong>?
+              </p>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                <p className="text-xs text-destructive-foreground">
+                  This will deactivate their account and revoke all active sessions.
+                  They will not be able to log in again unless reactivated by an administrator.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setDeleteDialogOpen(false); setDeletingUser(null); }} className="inline-flex">Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={deleting}>
+              {deleting && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />}
+              <Trash2 className="w-4 h-4 mr-1.5" />
+              Delete User
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Role Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

@@ -87,6 +87,46 @@ export async function approveUser(id: string, approvedById: string) {
   return data;
 }
 
+/**
+ * Reject a pending user — sets is_active to false so they show as "Rejected"
+ * and cannot log in. The admin can still reactivate them later if needed.
+ */
+export async function rejectUser(id: string) {
+  if (!id) throw new Error("User ID is required");
+  const supabase = createClient();
+  const { data, error } = await (supabase as any)
+    .from("profiles")
+    .update({
+      is_active: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Permanently delete/deactivate a user via the server API.
+ * This uses service_role to also revoke auth sessions.
+ */
+export async function deleteUser(userId: string) {
+  if (!userId) throw new Error("User ID is required");
+  const supabase = createClient();
+
+  const response = await fetch("/api/admin/delete-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId }),
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Failed to delete user");
+  return result;
+}
+
 export async function fetchUsersStats() {
   const supabase = createClient();
 
@@ -104,7 +144,8 @@ export async function fetchUsersStats() {
   return {
     total: users.length,
     active: users.filter((u) => u.is_active).length,
-    pendingApproval: users.filter((u) => !u.is_approved).length,
+    pendingApproval: users.filter((u) => !u.is_approved && u.is_active).length,
+    rejected: users.filter((u) => !u.is_approved && !u.is_active).length,
     approved: users.filter((u) => u.is_approved).length,
     logistics_officer: logisticsOfficers.length,
     rotc_officer: rotcOfficers.length,
