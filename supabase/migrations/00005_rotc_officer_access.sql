@@ -37,3 +37,8 @@ create policy "All authenticated can view damage report photos"
 create policy "Authenticated can insert notifications"
   on public.notifications for insert
   with check (auth.role() = 'authenticated');
+
+-- Allow users to update their own notifications (e.g., mark as read)
+create policy "Users can update own notifications"
+  on public.notifications for update
+  using (user_id = auth.uid());
