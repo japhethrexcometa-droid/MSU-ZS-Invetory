@@ -4,6 +4,9 @@
 -- =============================================================
 
 -- 1. Create SECURITY DEFINER functions using PLPGSQL to prevent inlining
+drop function if exists public.is_logistics_officer(uuid);
+drop function if exists public.is_rotc_officer_or_admin(uuid);
+
 create or replace function public.is_logistics_officer(p_user_id uuid)
 returns boolean
 language plpgsql
