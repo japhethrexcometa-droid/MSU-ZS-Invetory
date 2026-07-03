@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -43,7 +43,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
   const router = useRouter();
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
-  const [searchOpen, setSearchOpen] = useState(false);
+  // Removed unused state variable
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -109,13 +109,11 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
 
         {/* Notifications */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                3
-              </span>
-            </Button>
+          <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative")}>
+            <Bell className="h-4 w-4" />
+            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+              3
+            </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel className="font-semibold">Notifications</DropdownMenuLabel>
