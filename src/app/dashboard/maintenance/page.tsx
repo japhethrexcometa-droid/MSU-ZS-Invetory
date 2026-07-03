@@ -10,6 +10,7 @@ import {
   fetchUpcomingMaintenance,
 } from "@/lib/maintenance";
 import { formatDate, formatCurrency } from "@/lib/inventory";
+import { NotifyAdminButton } from "@/components/shared/notify-admin-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -87,14 +88,22 @@ export default function MaintenancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-          <Wrench className="w-6 h-6 text-primary" />
-          Maintenance
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Track equipment maintenance, repairs, and inspections
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+            <Wrench className="w-6 h-6 text-primary" />
+            Maintenance
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Track equipment maintenance, repairs, and inspections
+          </p>
+        </div>
+        
+        <NotifyAdminButton 
+          title="Maintenance Review Needed"
+          message="Please review the current maintenance tasks and schedules."
+          type="maintenance"
+        />
       </div>
 
       {/* Upcoming Maintenance Alert */}

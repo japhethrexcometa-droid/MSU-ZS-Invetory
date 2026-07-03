@@ -53,8 +53,16 @@ export function canViewAuditLogs(role: string): boolean {
   return LOGISTICS_ONLY.includes(role);
 }
 
+export function canViewSettings(role: string): boolean {
+  return true; // Both roles can view settings (read-only)
+}
+
 export function canManageSettings(role: string): boolean {
   return LOGISTICS_ONLY.includes(role);
+}
+
+export function canViewMaintenance(role: string): boolean {
+  return true; // Both roles can view maintenance records
 }
 
 export function canManageMaintenance(role: string): boolean {
@@ -63,4 +71,8 @@ export function canManageMaintenance(role: string): boolean {
 
 export function canManageRadios(role: string): boolean {
   return true; // Both can view/track radios
+}
+
+export function canNotifyAdmin(role: string): boolean {
+  return role === "rotc_officer"; // ROTC Officer can notify admin
 }

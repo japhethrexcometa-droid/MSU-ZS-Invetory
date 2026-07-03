@@ -79,18 +79,6 @@ export default function AnalyticsPage() {
     return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium">Access Restricted</p>
-          <p className="text-xs text-muted-foreground mt-1">Only Commandants and Administrators can view analytics.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>

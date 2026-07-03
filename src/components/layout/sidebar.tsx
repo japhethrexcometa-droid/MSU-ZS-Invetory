@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
   { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { title: "Audit Trail", href: "/dashboard/audit-log", icon: Activity, adminOnly: true },
   { title: "Users", href: "/dashboard/users", icon: Users, adminOnly: true },
-  { title: "System Settings", href: "/dashboard/settings", icon: Settings, adminOnly: true },
+  { title: "System Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 interface SidebarProps {

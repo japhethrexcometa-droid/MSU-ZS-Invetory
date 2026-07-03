@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -44,6 +44,31 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
   // Removed unused state variable
+
+  const [notifications, setNotifications] = useState<import("@/lib/notifications").Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (profile?.id) {
+      import("@/lib/notifications").then((lib) => {
+        lib.fetchUnreadNotifications(profile.id).then((data) => {
+          setNotifications(data);
+          setUnreadCount(data.length);
+        }).catch(console.error);
+      });
+    }
+  }, [profile?.id]);
+
+  const handleNotificationClick = async (id: string) => {
+    try {
+      const lib = await import("@/lib/notifications");
+      await lib.markAsRead(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -111,36 +136,63 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative")}>
             <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="font-semibold">Notifications</DropdownMenuLabel>
+            <DropdownMenuLabel className="font-semibold flex justify-between items-center">
+              <span>Notifications</span>
+              {unreadCount > 0 && (
+                <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  {unreadCount} new
+                </span>
+              )}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="flex flex-col max-h-[300px] overflow-y-auto">
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                <span className="text-sm font-medium">New Pending Request</span>
-                <span className="text-xs text-muted-foreground">Cadet Doe requested to borrow a Radio.</span>
-                <span className="text-[10px] text-muted-foreground mt-1">2 minutes ago</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                <span className="text-sm font-medium">Low Inventory Alert</span>
-                <span className="text-xs text-muted-foreground">M16 Rifles are running low in Armory A.</span>
-                <span className="text-[10px] text-muted-foreground mt-1">1 hour ago</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                <span className="text-sm font-medium">Maintenance Complete</span>
-                <span className="text-xs text-muted-foreground">Radio 04 has been repaired.</span>
-                <span className="text-[10px] text-muted-foreground mt-1">2 hours ago</span>
-              </DropdownMenuItem>
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No new notifications
+                </div>
+              ) : (
+                notifications.map((notif, index) => (
+                  <div key={notif.id}>
+                    <DropdownMenuItem 
+                      className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                      onClick={() => handleNotificationClick(notif.id)}
+                    >
+                      <span className="text-sm font-medium">{notif.title}</span>
+                      <span className="text-xs text-muted-foreground">{notif.message}</span>
+                      <span className="text-[10px] text-muted-foreground mt-1">
+                        {new Date(notif.created_at).toLocaleString()}
+                      </span>
+                    </DropdownMenuItem>
+                    {index < notifications.length - 1 && <DropdownMenuSeparator />}
+                  </div>
+                ))
+              )}
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer">
-              View all notifications
-            </DropdownMenuItem>
+            {notifications.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer"
+                  onClick={async () => {
+                    if (profile?.id) {
+                      const lib = await import("@/lib/notifications");
+                      await lib.markAllAsRead(profile.id);
+                      setNotifications([]);
+                      setUnreadCount(0);
+                    }
+                  }}
+                >
+                  Mark all as read
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 

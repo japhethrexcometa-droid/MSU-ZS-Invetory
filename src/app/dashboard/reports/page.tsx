@@ -196,18 +196,6 @@ export default function ReportsPage() {
     return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium">Access Restricted</p>
-          <p className="text-xs text-muted-foreground mt-1">Only officers can access reports.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -224,6 +212,8 @@ export default function ReportsPage() {
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(REPORT_CONFIG).map(([key, config]) => {
+              if (key === "users" && !isAdmin) return null;
+              
               const Icon = config.icon;
               return (
                 <button

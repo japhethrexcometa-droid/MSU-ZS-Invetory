@@ -101,25 +101,16 @@ export default function SettingsPage() {
     return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium">Access Restricted</p>
-          <p className="text-xs text-muted-foreground mt-1">Only System Administrators can manage settings.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-          <Settings className="w-6 h-6 text-primary" />
-          System Settings
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+            <Settings className="w-6 h-6 text-primary" />
+            System Settings
+          </h1>
+          {!isAdmin && <Badge variant="secondary">Read Only</Badge>}
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
           Configure system-wide parameters and preferences
         </p>
@@ -151,11 +142,12 @@ export default function SettingsPage() {
                     value={editValues[setting.key] || ""}
                     onChange={(e) => setEditValues((prev) => ({ ...prev, [setting.key]: e.target.value }))}
                     className="flex-1"
+                    disabled={!isAdmin}
                   />
                   <Button
                     size="icon"
                     onClick={() => handleSave(setting.key)}
-                    disabled={saving === setting.key}
+                    disabled={!isAdmin || saving === setting.key}
                   >
                     {saving === setting.key ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
