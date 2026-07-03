@@ -174,7 +174,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
               </DropdownMenuItem>
             ) : (
               notifications.map((notif, index) => (
-                <React.Fragment key={notif.id}>
+                <DropdownMenuGroup key={notif.id}>
                   <DropdownMenuItem 
                     className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
                     onClick={() => handleNotificationClick(notif)}
@@ -185,12 +185,12 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                       {new Date(notif.created_at).toLocaleString()}
                     </span>
                   </DropdownMenuItem>
-                  {index < notifications.length - 1 && <DropdownMenuSeparator />}
-                </React.Fragment>
+                  {index < notifications.length - 1 ? <DropdownMenuSeparator /> : null}
+                </DropdownMenuGroup>
               ))
             )}
-            {notifications.length > 0 && (
-              <>
+            {notifications.length > 0 ? (
+              <DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer"
@@ -204,8 +204,8 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                 >
                   Mark all as read
                 </DropdownMenuItem>
-              </>
-            )}
+              </DropdownMenuGroup>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
 
