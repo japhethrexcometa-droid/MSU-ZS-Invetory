@@ -60,11 +60,27 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
     }
   }, [profile?.id]);
 
-  const handleNotificationClick = async (id: string) => {
+  const handleNotificationClick = async (notif: Notification) => {
     try {
-      await markAsRead(id);
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      await markAsRead(notif.id);
+      setNotifications(prev => prev.filter(n => n.id !== notif.id));
       setUnreadCount(prev => Math.max(0, prev - 1));
+
+      // Route to relevant page if applicable
+      if (notif.reference_id) {
+        switch (notif.reference_type) {
+          case "borrow_request":
+            router.push(`/dashboard/borrow/${notif.reference_id}`);
+            break;
+          case "maintenance":
+            router.push("/dashboard/maintenance");
+            break;
+          case "lost_report":
+          case "damage_report":
+            router.push("/dashboard/lost-damaged");
+            break;
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -161,8 +177,8 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                 notifications.map((notif, index) => (
                   <div key={notif.id}>
                     <DropdownMenuItem 
-                      className="flex flex-col items-start gap-1 p-3 cursor-pointer"
-                      onClick={() => handleNotificationClick(notif.id)}
+                      className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
+                      onClick={() => handleNotificationClick(notif)}
                     >
                       <span className="text-sm font-medium">{notif.title}</span>
                       <span className="text-xs text-muted-foreground">{notif.message}</span>
