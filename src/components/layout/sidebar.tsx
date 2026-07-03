@@ -23,6 +23,7 @@ import {
   Activity,
   BookOpen,
   Siren,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@/types/database";
@@ -129,7 +130,20 @@ export function Sidebar({ role, isCollapsed }: SidebarProps) {
 
       {/* Footer */}
       {!isCollapsed && (
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-sidebar-border p-4 flex flex-col gap-4">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={async () => {
+              const { createClient } = await import("@/lib/supabase/client");
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              window.location.href = "/login";
+            }}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
           <p className="text-[10px] text-sidebar-foreground/40 text-center">
             v1.0.0 &bull; MSU-ZS ROTC Unit
           </p>

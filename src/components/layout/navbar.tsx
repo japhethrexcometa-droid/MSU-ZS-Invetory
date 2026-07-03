@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -175,7 +175,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                 </div>
               ) : (
                 notifications.map((notif, index) => (
-                  <div key={notif.id}>
+                  <React.Fragment key={notif.id}>
                     <DropdownMenuItem 
                       className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
                       onClick={() => handleNotificationClick(notif)}
@@ -187,7 +187,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                       </span>
                     </DropdownMenuItem>
                     {index < notifications.length - 1 && <DropdownMenuSeparator />}
-                  </div>
+                  </React.Fragment>
                 ))
               )}
             </div>

@@ -90,7 +90,9 @@ export default function UsersPage() {
         }),
         fetchUsersStats(),
       ]);
-      setUsers(result.data);
+      // Filter out admin users from the table so they can't manage themselves
+      const filteredUsers = result.data.filter(u => u.role !== 'logistics_officer' && u.role !== 'system_administrator');
+      setUsers(filteredUsers);
       setTotalCount(result.count);
       setStats(statsData);
     } catch (error) {
