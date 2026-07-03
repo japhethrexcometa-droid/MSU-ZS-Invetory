@@ -168,29 +168,27 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <div className="flex flex-col max-h-[300px] overflow-y-auto">
-              {notifications.length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  No new notifications
-                </div>
-              ) : (
-                notifications.map((notif, index) => (
-                  <React.Fragment key={notif.id}>
-                    <DropdownMenuItem 
-                      className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
-                      onClick={() => handleNotificationClick(notif)}
-                    >
-                      <span className="text-sm font-medium">{notif.title}</span>
-                      <span className="text-xs text-muted-foreground">{notif.message}</span>
-                      <span className="text-[10px] text-muted-foreground mt-1">
-                        {new Date(notif.created_at).toLocaleString()}
-                      </span>
-                    </DropdownMenuItem>
-                    {index < notifications.length - 1 && <DropdownMenuSeparator />}
-                  </React.Fragment>
-                ))
-              )}
-            </div>
+            {notifications.length === 0 ? (
+              <DropdownMenuItem disabled className="justify-center p-4 text-center text-sm text-muted-foreground">
+                No new notifications
+              </DropdownMenuItem>
+            ) : (
+              notifications.map((notif, index) => (
+                <React.Fragment key={notif.id}>
+                  <DropdownMenuItem 
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <span className="text-sm font-medium">{notif.title}</span>
+                    <span className="text-xs text-muted-foreground">{notif.message}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(notif.created_at).toLocaleString()}
+                    </span>
+                  </DropdownMenuItem>
+                  {index < notifications.length - 1 && <DropdownMenuSeparator />}
+                </React.Fragment>
+              ))
+            )}
             {notifications.length > 0 && (
               <>
                 <DropdownMenuSeparator />
