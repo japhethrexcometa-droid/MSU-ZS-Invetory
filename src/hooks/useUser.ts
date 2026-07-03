@@ -48,7 +48,7 @@ export function useUser() {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { user, profile, loading, supabase };
 }

@@ -91,7 +91,7 @@ export default function UsersPage() {
         fetchUsersStats(),
       ]);
       // Filter out admin users from the table so they can't manage themselves
-      const filteredUsers = result.data.filter(u => u.role !== 'logistics_officer' && u.role !== 'system_administrator');
+      const filteredUsers = result.data.filter(u => u.role !== 'logistics_officer');
       setUsers(filteredUsers);
       setTotalCount(result.count);
       setStats(statsData);
@@ -208,7 +208,7 @@ export default function UsersPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <Card className="border-border/50">
             <CardContent className="p-4 flex items-center gap-3">
               <Users className="w-5 h-5 text-primary shrink-0" />

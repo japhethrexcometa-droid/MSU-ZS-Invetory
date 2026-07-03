@@ -386,7 +386,7 @@ function BorrowDetail({ borrowId }: { borrowId: string }) {
                         : ''}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">Transaction No.</p>
                       <p className="font-medium font-mono">{transaction.transaction_no}</p>

@@ -283,7 +283,7 @@ function RadioDetail({ radioId }: { radioId: string }) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow
                       icon={BatteryMedium}
                       label="Battery Status"
@@ -320,7 +320,7 @@ function RadioDetail({ radioId }: { radioId: string }) {
                   <CardTitle className="text-lg">Location & Assignment</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow
                       icon={MapPin}
                       label="Storage Location"
@@ -366,7 +366,7 @@ function RadioDetail({ radioId }: { radioId: string }) {
                   <CardTitle className="text-lg">Procurement</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow icon={User} label="Supplier" value={radio.supplier || "—"} />
                     <DetailRow icon={Calendar} label="Purchase Date" value={formatDate(radio.purchase_date)} />
                     <DetailRow icon={Calendar} label="Warranty Expiry" value={formatDate(radio.warranty_expiry)} />

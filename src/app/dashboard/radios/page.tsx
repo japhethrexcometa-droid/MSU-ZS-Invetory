@@ -144,7 +144,7 @@ export default function RadiosPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: "Total", value: stats.total, icon: Radio, color: "text-primary" },
           { label: "Available", value: stats.available, icon: Shield, color: "text-success" },

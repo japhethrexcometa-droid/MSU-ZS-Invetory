@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Menu,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/permissions";
@@ -39,9 +40,10 @@ interface NavbarProps {
   profile: Profile | null;
   isCollapsed: boolean;
   onToggleSidebar: () => void;
+  onOpenMobileMenu?: () => void;
 }
 
-export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
+export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu }: NavbarProps) {
   const router = useRouter();
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
@@ -104,21 +106,31 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
     <header
       className={cn(
         "sticky top-0 z-30 flex h-16 items-center gap-4 glass-nav shadow-sm px-4 transition-all duration-300",
-        isCollapsed ? "ml-16" : "ml-64"
+        "ml-0 md:ml-16 lg:ml-64"
       )}
     >
-      {/* Sidebar Toggle */}
+      {/* Sidebar Toggle — desktop only */}
       <Button
         variant="ghost"
         size="icon"
         onClick={onToggleSidebar}
-        className="h-9 w-9 shrink-0"
+        className="h-9 w-9 shrink-0 hidden md:inline-flex"
       >
         {isCollapsed ? (
           <ChevronRight className="h-4 w-4" />
         ) : (
           <ChevronLeft className="h-4 w-4" />
         )}
+      </Button>
+
+      {/* Mobile Menu Toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onOpenMobileMenu}
+        className="h-9 w-9 shrink-0 md:hidden"
+      >
+        <Menu className="h-5 w-5" />
       </Button>
 
       {/* Search */}

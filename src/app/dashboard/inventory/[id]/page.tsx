@@ -187,7 +187,7 @@ function AssetDetail({ assetId }: { assetId: string }) {
                   <CardTitle className="text-lg">Basic Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow icon={Tag} label="Category" value={asset.category?.name || "—"} />
                     <DetailRow icon={FileText} label="Description" value={asset.description || "—"} />
                     <DetailRow icon={Package} label="Brand" value={asset.brand || "—"} />
@@ -204,7 +204,7 @@ function AssetDetail({ assetId }: { assetId: string }) {
                   <CardTitle className="text-lg">Procurement</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow icon={User} label="Supplier" value={asset.supplier || "—"} />
                     <DetailRow icon={Calendar} label="Purchase Date" value={formatDate(asset.purchase_date)} />
                     <DetailRow icon={DollarSign} label="Purchase Cost" value={formatCurrency(asset.purchase_cost)} />
@@ -221,7 +221,7 @@ function AssetDetail({ assetId }: { assetId: string }) {
                   <CardTitle className="text-lg">Location & Assignment</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                     <DetailRow
                       icon={MapPin}
                       label="Location"
@@ -256,7 +256,7 @@ function AssetDetail({ assetId }: { assetId: string }) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                       <DetailRow icon={Radio} label="Frequency" value={asset.radio_frequency || "—"} />
                       <DetailRow icon={Radio} label="Battery Status" value={asset.battery_status || "—"} />
                     </div>

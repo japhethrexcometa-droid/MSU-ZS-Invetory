@@ -183,6 +183,9 @@
   .hover-card-effect {
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 cursor-pointer;
   }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
   .glass-nav {
     @apply bg-background/70 backdrop-blur-xl border-b border-border/40;
   }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/database";
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -30,7 +32,6 @@ export default function DashboardLayout({
         return;
       }
 
-      // Use server API to look up profile (bypasses RLS)
       try {
         const res = await fetch("/api/auth/lookup-email", {
           method: "POST",
@@ -41,7 +42,6 @@ export default function DashboardLayout({
         if (res.ok) {
           const data = await res.json();
           if (data?.is_approved) {
-            // Build minimal profile from API response
             const p: Profile = {
               id: user.id,
               email: user.email ?? "",
@@ -65,7 +65,6 @@ export default function DashboardLayout({
           }
         }
       } catch (e) {
-        // Network error — stay on loading or show pending
         console.error("Profile lookup failed:", e);
       }
 
@@ -86,17 +85,16 @@ export default function DashboardLayout({
     );
   }
 
-  // Pending approval state — show gate page, no sidebar/navbar
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/50 to-background">
-        <div className="max-w-md text-center space-y-6 p-8">
+        <div className="max-w-md text-center space-y-6 p-4 md:p-8">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center">
             <ShieldAlert className="w-8 h-8 text-amber-500" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">Account Pending Approval</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight">Account Pending Approval</h1>
+            <p className="text-sm text-muted-foreground">
               Your account is waiting for approval from the <strong>Logistics Officer (S-4)</strong>.
               You&apos;ll be able to access the system once approved.
             </p>
@@ -125,23 +123,31 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar role={profile.role} isCollapsed={isCollapsed} />
+      {/* Sidebar — hidden on mobile, visible on md+ */}
+      <div className="hidden md:block">
+        <Sidebar role={profile.role} isCollapsed={isCollapsed} />
+      </div>
+      {/* Mobile Navigation Sheet */}
+      <div className="md:hidden">
+        <MobileNav role={profile.role} isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      </div>
       <Navbar
         profile={profile}
         isCollapsed={isCollapsed}
         onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
+        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
       <main
         className={cn(
           "pt-16 min-h-screen transition-all duration-300",
-          isCollapsed ? "ml-16" : "ml-64"
+          "ml-0",
+          "md:ml-16 lg:ml-64"
         )}
       >
-        <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-8 animate-page-in">{children}</div>
+        <div className="p-3 md:p-6 lg:p-8 pb-20 md:pb-8 animate-page-in">{children}</div>
       </main>
-
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <MobileBottomNav role={profile.role} />
     </div>
   );
 }

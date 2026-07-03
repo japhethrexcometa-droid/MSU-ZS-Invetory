@@ -7,36 +7,78 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { Menu, Shield, LayoutDashboard, Package, ArrowLeftRight, Radio, AlertTriangle, Wrench, FileText } from "lucide-react";
+import {
+  Menu,
+  Shield,
+  LayoutDashboard,
+  Package,
+  BookOpen,
+  Search,
+  ArrowLeftRight,
+  RotateCcw,
+  Radio,
+  AlertTriangle,
+  Wrench,
+  FileText,
+  BarChart3,
+  Activity,
+  Users,
+  Settings,
+} from "lucide-react";
 import { INSTITUTION_SHORT } from "@/lib/constants";
+import type { UserRole } from "@/types/database";
 
 interface NavItem {
   title: string;
   href: string;
   icon: React.ElementType;
+  adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { title: "Categories", href: "/dashboard/categories", icon: BookOpen },
+  { title: "Locations", href: "/dashboard/locations", icon: Search },
   { title: "Borrow / Return", href: "/dashboard/borrow", icon: ArrowLeftRight },
+  { title: "Returns", href: "/dashboard/returns", icon: RotateCcw },
   { title: "Radio Tracking", href: "/dashboard/radios", icon: Radio },
   { title: "Lost & Damaged", href: "/dashboard/lost-damaged", icon: AlertTriangle },
   { title: "Maintenance", href: "/dashboard/maintenance", icon: Wrench },
   { title: "Reports", href: "/dashboard/reports", icon: FileText },
+  { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Audit Trail", href: "/dashboard/audit-log", icon: Activity, adminOnly: true },
+  { title: "Users", href: "/dashboard/users", icon: Users, adminOnly: true },
+  { title: "System Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function MobileNav() {
-  const [open, setOpen] = useState(false);
+interface MobileNavProps {
+  role?: UserRole;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function MobileNav({ role, isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isLogistics = role === "logistics_officer";
+
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const setOpen = (v: boolean) => {
+    if (isOpen !== undefined) {
+      if (!v) onClose?.();
+    } else {
+      setInternalOpen(v);
+    }
+  };
+
+  const filteredItems = navItems.filter(
+    (item) => !item.adminOnly || isLogistics
+  );
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger className="md:hidden flex items-center justify-center h-9 w-9 rounded-md hover:bg-muted transition-colors">
-        <Menu className="h-5 w-5" />
-        <span className="sr-only">Open navigation menu</span>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
+      <SheetContent side="left" className="w-72 p-0">
         <div className="flex h-16 items-center gap-3 border-b border-border px-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <Shield className="h-5 w-5 text-primary-foreground" />
@@ -50,9 +92,10 @@ export function MobileNav() {
         </div>
         <ScrollArea className="flex-1 px-2 py-4">
           <nav className="flex flex-col gap-1">
-            {navItems.map((item) => {
+            {filteredItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}
