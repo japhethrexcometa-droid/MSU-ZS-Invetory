@@ -18,6 +18,8 @@ import {
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import type { Profile } from "@/types/database";
+import { fetchUnreadNotifications, markAsRead, markAllAsRead } from "@/lib/notifications";
+import type { Notification } from "@/lib/notifications";
 import {
   Bell,
   Moon,
@@ -45,24 +47,22 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   // Removed unused state variable
 
-  const [notifications, setNotifications] = useState<import("@/lib/notifications").Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (profile?.id) {
-      import("@/lib/notifications").then((lib) => {
-        lib.fetchUnreadNotifications(profile.id).then((data) => {
-          setNotifications(data);
-          setUnreadCount(data.length);
-        }).catch(console.error);
-      });
+      fetchUnreadNotifications(profile.id).then((data) => {
+        const safeData = data || [];
+        setNotifications(safeData);
+        setUnreadCount(safeData.length);
+      }).catch(console.error);
     }
   }, [profile?.id]);
 
   const handleNotificationClick = async (id: string) => {
     try {
-      const lib = await import("@/lib/notifications");
-      await lib.markAsRead(id);
+      await markAsRead(id);
       setNotifications(prev => prev.filter(n => n.id !== id));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (e) {
@@ -182,8 +182,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar }: NavbarProps) {
                   className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer"
                   onClick={async () => {
                     if (profile?.id) {
-                      const lib = await import("@/lib/notifications");
-                      await lib.markAllAsRead(profile.id);
+                      await markAllAsRead(profile.id);
                       setNotifications([]);
                       setUnreadCount(0);
                     }

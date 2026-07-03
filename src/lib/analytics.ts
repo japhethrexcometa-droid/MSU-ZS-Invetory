@@ -103,7 +103,7 @@ export async function fetchCategoryDistribution() {
   if (error) throw error;
 
   const distribution: Record<string, number> = {};
-  for (const item of data as any[]) {
+  for (const item of (data || []) as any[]) {
     const name = item.category?.name || "Uncategorized";
     distribution[name] = (distribution[name] || 0) + 1;
   }
