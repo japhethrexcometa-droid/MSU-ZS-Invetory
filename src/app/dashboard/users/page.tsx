@@ -38,6 +38,8 @@ import {
   KeyRound,
   AlertTriangle,
   Trash2,
+  RefreshCw,
+  UserX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -62,6 +64,11 @@ export default function UsersPage() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingUser, setRejectingUser] = useState<any>(null);
   const [rejecting, setRejecting] = useState(false);
+
+  // Reactivate confirmation
+  const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false);
+  const [reactivatingUser, setReactivatingUser] = useState<any>(null);
+  const [reactivating, setReactivating] = useState(false);
 
   // Delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -152,6 +159,23 @@ export default function UsersPage() {
       toast.error(error.message || "Failed to reject user");
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const handleReactivateUser = async () => {
+    if (!reactivatingUser) return;
+    setReactivating(true);
+    try {
+      await updateUser(reactivatingUser.id, { is_active: true });
+      const name = `${reactivatingUser.first_name} ${reactivatingUser.last_name}`;
+      toast.success(`${name} has been reactivated`);
+      setReactivateDialogOpen(false);
+      setReactivatingUser(null);
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reactivate user");
+    } finally {
+      setReactivating(false);
     }
   };
 
@@ -251,7 +275,7 @@ export default function UsersPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <Card className="border-border/50">
             <CardContent className="p-4 flex items-center gap-3">
               <Users className="w-5 h-5 text-primary shrink-0" />
@@ -268,6 +292,18 @@ export default function UsersPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
               <div><p className="text-2xl font-bold">{stats.pendingApproval}</p><p className="text-xs text-muted-foreground">Pending</p></div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-destructive shrink-0" />
+              <div><p className="text-2xl font-bold">{stats.rejected || 0}</p><p className="text-xs text-muted-foreground">Rejected</p></div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <UserX className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div><p className="text-2xl font-bold">{stats.deactivated || 0}</p><p className="text-xs text-muted-foreground">Deactivated</p></div>
             </CardContent>
           </Card>
           <Card className="border-border/50">
@@ -437,6 +473,19 @@ export default function UsersPage() {
                               </Button>
                             </>
                           )}
+                          {/* Reactivate button for deactivated or rejected users */}
+                          {!user.is_active && (
+                            <Button
+                              variant="ghost" size="icon" className="h-8 w-8 text-success"
+                              onClick={() => {
+                                setReactivatingUser(user);
+                                setReactivateDialogOpen(true);
+                              }}
+                              title="Reactivate user"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          )}
                           {user.student_number && (
                             <Button
                               variant="ghost" size="icon" className="h-8 w-8 text-warning"
@@ -446,7 +495,7 @@ export default function UsersPage() {
                               <KeyRound className="w-4 h-4" />
                             </Button>
                           )}
-                          {user.role !== "logistics_officer" && (
+                          {user.role !== "logistics_officer" && user.is_active && (
                             <>
                               <Button
                                 variant="ghost" size="icon" className="h-8 w-8"
@@ -471,6 +520,19 @@ export default function UsersPage() {
                               </Button>
                             </>
                           )}
+                          {/* Show delete button for inactive users too */}
+                          {user.role !== "logistics_officer" && !user.is_active && (
+                            <Button
+                              variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                              onClick={() => {
+                                setDeletingUser(user);
+                                setDeleteDialogOpen(true);
+                              }}
+                              title="Delete user"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -494,6 +556,31 @@ export default function UsersPage() {
           </div>
         )}
       </Card>
+
+      {/* Reactivate Confirmation Dialog */}
+      <Dialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reactivate User</DialogTitle>
+            <DialogDescription>
+              This will restore access for <strong>{reactivatingUser?.first_name} {reactivatingUser?.last_name}</strong>.
+              {reactivatingUser && !reactivatingUser.is_approved
+                ? " They will need to be approved by you before they can log in."
+                : " They will be able to log in again."
+              }
+              You may also need to reset their password so they can sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setReactivateDialogOpen(false); setReactivatingUser(null); }} className="inline-flex">Cancel</Button>
+            <Button variant="default" onClick={handleReactivateUser} disabled={reactivating}>
+              {reactivating && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />}
+              <RefreshCw className="w-4 h-4 mr-1.5" />
+              Reactivate
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Reject Confirmation Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>

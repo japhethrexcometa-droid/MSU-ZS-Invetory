@@ -146,6 +146,7 @@ export async function fetchUsersStats() {
     active: users.filter((u) => u.is_active).length,
     pendingApproval: users.filter((u) => !u.is_approved && u.is_active).length,
     rejected: users.filter((u) => !u.is_approved && !u.is_active).length,
+    deactivated: users.filter((u) => u.is_approved && !u.is_active).length,
     approved: users.filter((u) => u.is_approved).length,
     logistics_officer: logisticsOfficers.length,
     rotc_officer: rotcOfficers.length,
