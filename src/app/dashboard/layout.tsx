@@ -137,7 +137,7 @@ export default function DashboardLayout({
           isCollapsed ? "ml-16" : "ml-64"
         )}
       >
-        <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-8">{children}</div>
+        <div className="p-4 md:p-6 lg:p-8 pb-20 md:pb-8 animate-page-in">{children}</div>
       </main>
 
       {/* Mobile Bottom Navigation */}

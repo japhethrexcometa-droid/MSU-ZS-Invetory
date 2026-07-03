@@ -155,7 +155,7 @@ export async function fetchRadioBorrowHistory(
     .limit(limit);
 
   if (error) throw error;
-  return data as unknown as BorrowTransaction[];
+  return (data || []) as unknown as BorrowTransaction[];
 }
 
 // ─── Fetch Radio Tracking History (from radio_tracking table) ──
@@ -176,7 +176,7 @@ export async function fetchRadioTrackingHistory(assetId: string) {
     .limit(50);
 
   if (error) throw error;
-  return data as unknown as RadioTracking[];
+  return (data || []) as unknown as RadioTracking[];
 }
 
 // ─── Assign Radio to a Holder ─────────────────────────────
@@ -371,7 +371,7 @@ export async function checkOverdueRadios(): Promise<Asset[]> {
     .eq("is_deleted", false);
 
   if (error) throw error;
-  return data as unknown as Asset[];
+  return (data || []) as unknown as Asset[];
 }
 
 // ─── Radio Statistics ─────────────────────────────────────

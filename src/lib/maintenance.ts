@@ -147,7 +147,7 @@ export async function fetchUpcomingMaintenance(limit = 10) {
     .limit(limit);
 
   if (error) throw error;
-  return data as unknown as MaintenanceRecord[];
+  return (data || []) as unknown as MaintenanceRecord[];
 }
 
 export const MAINTENANCE_TYPE_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "warning" | "outline" }> = {

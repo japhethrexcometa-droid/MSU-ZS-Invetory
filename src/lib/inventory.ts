@@ -176,7 +176,7 @@ export async function fetchCategories() {
     .order("name");
 
   if (error) throw error;
-  return data;
+  return data || [];
 }
 
 // Fetch all locations
@@ -190,7 +190,7 @@ export async function fetchLocations() {
     .order("building");
 
   if (error) throw error;
-  return data;
+  return data || [];
 }
 
 // Status badge configuration

@@ -75,7 +75,7 @@ export function Sidebar({ role, isCollapsed }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border bg-sidebar transition-all duration-300",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border bg-sidebar/95 backdrop-blur-xl shadow-lg transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}
     >

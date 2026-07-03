@@ -23,7 +23,7 @@ export async function fetchUnreadNotifications(userId: string) {
     .limit(10);
 
   if (error) throw error;
-  return data as Notification[];
+  return (data || []) as Notification[];
 }
 
 export async function markAsRead(notificationId: string) {

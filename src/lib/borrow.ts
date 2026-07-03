@@ -89,7 +89,7 @@ export async function fetchBorrowById(id: string) {
     .single();
 
   if (error) throw error;
-  return data as unknown as BorrowTransaction;
+  return (data || []) as unknown as BorrowTransaction;
 }
 
 // Create a new borrow request
@@ -129,7 +129,7 @@ export async function approveBorrowRequest(id: string, approvedById: string | nu
     .single();
 
   if (error) throw error;
-  return data as unknown as BorrowTransaction;
+  return (data || []) as unknown as BorrowTransaction;
 }
 
 // Reject a borrow request
@@ -148,7 +148,7 @@ export async function rejectBorrowRequest(id: string, approvedById: string | nul
     .single();
 
   if (error) throw error;
-  return data as unknown as BorrowTransaction;
+  return (data || []) as unknown as BorrowTransaction;
 }
 
 // Release an item (after approval, supply officer releases physical item)
@@ -305,7 +305,7 @@ export async function fetchAvailableAssets() {
     .order("item_name");
 
   if (error) throw error;
-  return data;
+  return data || [];
 }
 
 // Report an item as lost from a borrow transaction

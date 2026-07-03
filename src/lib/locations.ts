@@ -21,7 +21,7 @@ export async function fetchLocations(search?: string) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as unknown as Location[];
+  return (data || []) as unknown as Location[];
 }
 
 export async function fetchLocationById(id: string) {

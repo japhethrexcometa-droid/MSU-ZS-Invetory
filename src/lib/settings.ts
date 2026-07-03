@@ -15,7 +15,7 @@ export async function fetchSettings() {
     .order("key");
 
   if (error) throw error;
-  return data as unknown as SystemSetting[];
+  return (data || []) as unknown as SystemSetting[];
 }
 
 export async function fetchSetting(key: string) {
@@ -80,7 +80,7 @@ export async function fetchActivityLog(limit = 50) {
     .limit(limit);
 
   if (error) throw error;
-  return data;
+  return data || [];
 }
 
 export async function logActivity(raw: Record<string, unknown>) {

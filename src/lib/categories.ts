@@ -21,7 +21,7 @@ export async function fetchCategories(search?: string) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as unknown as Category[];
+  return (data || []) as unknown as Category[];
 }
 
 export async function fetchCategoryById(id: string) {
