@@ -33,6 +33,7 @@ drop policy if exists "Logistics Officer can view all profiles" on public.profil
 drop policy if exists "Logistics Officer can insert profiles" on public.profiles;
 drop policy if exists "Logistics Officer can update any profile" on public.profiles;
 drop policy if exists "Users can view own profile or Logistics Officer can view all" on public.profiles;
+drop policy if exists "Users can update own profile" on public.profiles;
 
 create policy "Users can view own profile or Logistics Officer can view all"
   on public.profiles for select
