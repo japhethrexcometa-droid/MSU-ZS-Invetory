@@ -51,15 +51,27 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
+  const refetchNotifications = async () => {
     if (profile?.id) {
-      fetchUnreadNotifications(profile.id).then((data) => {
+      setIsLoading(true);
+      try {
+        const data = await fetchUnreadNotifications(profile.id);
         const safeData = data || [];
         setNotifications(safeData);
         setUnreadCount(safeData.length);
-      }).catch(console.error);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        toast.error('Failed to load notifications');
+      } finally {
+        setIsLoading(false);
+      }
     }
+  };
+
+  useEffect(() => {
+    refetchNotifications();
   }, [profile?.id]);
 
   const handleNotificationClick = async (notif: Notification) => {
@@ -85,6 +97,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
       }
     } catch (e) {
       console.error(e);
+      toast.error('Failed to mark notification as read');
     }
   };
 
@@ -170,7 +183,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
               </span>
             )}
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-80 z-50">
             <DropdownMenuLabel className="font-semibold flex justify-between items-center">
               <span>Notifications</span>
               {unreadCount > 0 && (
@@ -180,7 +193,11 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {notifications.length === 0 ? (
+            {isLoading ? (
+              <DropdownMenuItem className="justify-center p-4 text-center text-sm text-muted-foreground cursor-default focus:bg-transparent focus:text-muted-foreground">
+                Loading notifications...
+              </DropdownMenuItem>
+            ) : notifications.length === 0 ? (
               <DropdownMenuItem className="justify-center p-4 text-center text-sm text-muted-foreground cursor-default focus:bg-transparent focus:text-muted-foreground">
                 No new notifications
               </DropdownMenuItem>
@@ -208,9 +225,15 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
                   className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer"
                   onClick={async () => {
                     if (profile?.id) {
-                      await markAllAsRead(profile.id);
-                      setNotifications([]);
-                      setUnreadCount(0);
+                      try {
+                        await markAllAsRead(profile.id);
+                        setNotifications([]);
+                        setUnreadCount(0);
+                        toast.success('All notifications marked as read');
+                      } catch (error) {
+                        console.error('Failed to mark all as read:', error);
+                        toast.error('Failed to mark all as read');
+                      }
                     }
                   }}
                 >
