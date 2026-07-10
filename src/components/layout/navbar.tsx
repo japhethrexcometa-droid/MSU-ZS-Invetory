@@ -53,25 +53,27 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const refetchNotifications = async () => {
-    if (profile?.id) {
-      setIsLoading(true);
-      try {
-        const data = await fetchUnreadNotifications(profile.id);
-        const safeData = data || [];
-        setNotifications(safeData);
-        setUnreadCount(safeData.length);
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        toast.error('Failed to load notifications');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
   useEffect(() => {
-    refetchNotifications();
+    const loadNotifications = async () => {
+      if (profile?.id) {
+        setIsLoading(true);
+        try {
+          const data = await fetchUnreadNotifications(profile.id);
+          const safeData = data || [];
+          setNotifications(safeData);
+          setUnreadCount(safeData.length);
+        } catch (error) {
+          console.error('Failed to fetch notifications:', error);
+          toast.error('Failed to load notifications');
+          setNotifications([]);
+          setUnreadCount(0);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadNotifications();
   }, [profile?.id]);
 
   const handleNotificationClick = async (notif: Notification) => {
@@ -175,8 +177,8 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
 
         {/* Notifications */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+          <DropdownMenuTrigger className="relative">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
