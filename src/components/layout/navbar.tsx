@@ -31,6 +31,11 @@ import {
   ChevronRight,
   Search,
   Menu,
+  Package,
+  Wrench,
+  AlertTriangle,
+  CheckCircle,
+  Info,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/permissions";
@@ -53,6 +58,24 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -120,6 +143,42 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
 
   const roleLabel = profile?.role ? ROLES[profile.role as UserRole] || profile.role : "User";
 
+  // Helper functions for notification display
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'borrow_request':
+      case 'borrow_approved':
+      case 'borrow_rejected':
+        return <Package className="h-4 w-4 text-blue-500" />;
+      case 'maintenance':
+        return <Wrench className="h-4 w-4 text-orange-500" />;
+      case 'late_return':
+      case 'lost_item':
+      case 'damaged_item':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case 'new_equipment':
+      case 'account_approved':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      default:
+        return <Info className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const formatNotificationTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
     <header
       className={cn(
@@ -179,7 +238,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
         </Button>
 
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -188,14 +247,14 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center animate-pulse">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Button>
           
           {isDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-popover border border-border rounded-lg shadow-md z-50">
+            <div className="absolute right-0 top-full mt-2 w-80 bg-popover border border-border rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
               <div className="p-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-semibold">Notifications</span>
@@ -215,17 +274,24 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
                     No new notifications
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
                     {notifications.map((notif) => (
                       <div key={notif.id}>
                         <div 
-                          className="p-3 cursor-pointer hover:bg-accent rounded-md"
+                          className="p-3 cursor-pointer hover:bg-accent rounded-md transition-colors"
                           onClick={() => handleNotificationClick(notif)}
                         >
-                          <div className="text-sm font-medium">{notif.title}</div>
-                          <div className="text-xs text-muted-foreground">{notif.message}</div>
-                          <div className="text-[10px] text-muted-foreground mt-1">
-                            {new Date(notif.created_at).toLocaleString()}
+                          <div className="flex items-start gap-2">
+                            <div className="shrink-0 mt-0.5">
+                              {getNotificationIcon(notif.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium">{notif.title}</div>
+                              <div className="text-xs text-muted-foreground line-clamp-2">{notif.message}</div>
+                              <div className="text-[10px] text-muted-foreground mt-1">
+                                {formatNotificationTime(notif.created_at)}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -236,13 +302,14 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
                   <>
                     <div className="h-px bg-border mt-2 mb-2" />
                     <button
-                      className="w-full text-center text-sm font-medium text-primary py-2 hover:underline"
+                      className="w-full text-center text-sm font-medium text-primary py-2 hover:underline transition-colors"
                       onClick={async () => {
                         if (profile?.id) {
                           try {
                             await markAllAsRead(profile.id);
                             setNotifications([]);
                             setUnreadCount(0);
+                            setIsDropdownOpen(false);
                             toast.success('All notifications marked as read');
                           } catch (error) {
                             console.error('Failed to mark all as read:', error);
