@@ -81,22 +81,24 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
       await markAsRead(notif.id);
       setNotifications(prev => prev.filter(n => n.id !== notif.id));
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      toast.success('Notification marked as read');
 
-      // Route to relevant page if applicable
-      if (notif.reference_id) {
-        switch (notif.reference_type) {
-          case "borrow_request":
-            router.push(`/dashboard/borrow/${notif.reference_id}`);
-            break;
-          case "maintenance":
-            router.push("/dashboard/maintenance");
-            break;
-          case "lost_report":
-          case "damage_report":
-            router.push("/dashboard/lost-damaged");
-            break;
-        }
-      }
+      // Route to relevant page if applicable (prevent navigation for now to test)
+      // if (notif.reference_id) {
+      //   switch (notif.reference_type) {
+      //     case "borrow_request":
+      //       router.push(`/dashboard/borrow/${notif.reference_id}`);
+      //       break;
+      //     case "maintenance":
+      //       router.push("/dashboard/maintenance");
+      //       break;
+      //     case "lost_report":
+      //     case "damage_report":
+      //       router.push("/dashboard/lost-damaged");
+      //       break;
+      //   }
+      // }
     } catch (e) {
       console.error(e);
       toast.error('Failed to mark notification as read');
