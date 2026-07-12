@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -52,6 +52,7 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -178,77 +179,86 @@ export function Navbar({ profile, isCollapsed, onToggleSidebar, onOpenMobileMenu
         </Button>
 
         {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="relative">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 z-50">
-            <DropdownMenuLabel className="font-semibold flex justify-between items-center">
-              <span>Notifications</span>
-              {unreadCount > 0 && (
-                <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                  {unreadCount} new
-                </span>
-              )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {isLoading ? (
-              <DropdownMenuItem className="justify-center p-4 text-center text-sm text-muted-foreground cursor-default focus:bg-transparent focus:text-muted-foreground">
-                Loading notifications...
-              </DropdownMenuItem>
-            ) : notifications.length === 0 ? (
-              <DropdownMenuItem className="justify-center p-4 text-center text-sm text-muted-foreground cursor-default focus:bg-transparent focus:text-muted-foreground">
-                No new notifications
-              </DropdownMenuItem>
-            ) : (
-              notifications.map((notif, index) => (
-                <DropdownMenuGroup key={notif.id}>
-                  <DropdownMenuItem 
-                    className="flex flex-col items-start gap-1 p-3 cursor-pointer hover-card-effect"
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <span className="text-sm font-medium">{notif.title}</span>
-                    <span className="text-xs text-muted-foreground">{notif.message}</span>
-                    <span className="text-[10px] text-muted-foreground mt-1">
-                      {new Date(notif.created_at).toLocaleString()}
-                    </span>
-                  </DropdownMenuItem>
-                  {index < notifications.length - 1 ? <DropdownMenuSeparator /> : null}
-                </DropdownMenuGroup>
-              ))
+        <div className="relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 relative"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
             )}
-            {notifications.length > 0 ? (
-              <DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="w-full text-center text-sm font-medium text-primary justify-center cursor-pointer"
-                  onClick={async () => {
-                    if (profile?.id) {
-                      try {
-                        await markAllAsRead(profile.id);
-                        setNotifications([]);
-                        setUnreadCount(0);
-                        toast.success('All notifications marked as read');
-                      } catch (error) {
-                        console.error('Failed to mark all as read:', error);
-                        toast.error('Failed to mark all as read');
-                      }
-                    }
-                  }}
-                >
-                  Mark all as read
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </Button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-80 bg-popover border border-border rounded-lg shadow-md z-50">
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+                <div className="h-px bg-border mb-2" />
+                {isLoading ? (
+                  <div className="text-center text-sm text-muted-foreground p-4">
+                    Loading notifications...
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="text-center text-sm text-muted-foreground p-4">
+                    No new notifications
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {notifications.map((notif) => (
+                      <div key={notif.id}>
+                        <div 
+                          className="p-3 cursor-pointer hover:bg-accent rounded-md"
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          <div className="text-sm font-medium">{notif.title}</div>
+                          <div className="text-xs text-muted-foreground">{notif.message}</div>
+                          <div className="text-[10px] text-muted-foreground mt-1">
+                            {new Date(notif.created_at).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {notifications.length > 0 && (
+                  <>
+                    <div className="h-px bg-border mt-2 mb-2" />
+                    <button
+                      className="w-full text-center text-sm font-medium text-primary py-2 hover:underline"
+                      onClick={async () => {
+                        if (profile?.id) {
+                          try {
+                            await markAllAsRead(profile.id);
+                            setNotifications([]);
+                            setUnreadCount(0);
+                            toast.success('All notifications marked as read');
+                          } catch (error) {
+                            console.error('Failed to mark all as read:', error);
+                            toast.error('Failed to mark all as read');
+                          }
+                        }
+                      }}
+                    >
+                      Mark all as read
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* User Menu */}
         <DropdownMenu>
